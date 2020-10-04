@@ -74,6 +74,12 @@ ellipse(kozjol, (255, 255, 255), (144, 321, 27, 19))
 # eye
 ellipse(kozjol, (229, 128, 255), (161, 20, 31, 27))
 ellipse(kozjol, (0, 0, 0), (177, 27, 12, 11))
+flare = pygame.Surface((15, 8))
+flare.fill((229, 128, 255))
+flare.set_colorkey((229, 128, 255))
+ellipse(flare, (255, 255, 255), (0, 0, 15, 8))
+flare = rotate(flare, -30)
+kozjol.blit(flare, (166, 19))
 # horns(ears?)
 polygon(kozjol, (255, 255, 255), [(155, 26), (148, 24), (139, 17), (132, 6), (132, 2), (132, 8), (135, 18), (142, 27),
                                   (148, 34), (151, 34)])
