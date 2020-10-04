@@ -11,7 +11,7 @@ def placeflower(surface, pos, angle=0, zoom=1.0):
 
 def placebush(surface, pos, zoom=1, mirror=False):
     sbush = flip(rotozoom(bush, 0, zoom), mirror, False)
-    sbush.set_colorkey((170, 222, 55))
+    sbush.set_colorkey((170, 222, 135))
     surface.blit(sbush, pos)
 
 
