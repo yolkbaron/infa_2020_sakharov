@@ -9,16 +9,17 @@ def placeflower(surface, pos, angle=0, zoom=1.0):
     surface.blit(sflower, pos)
 
 
-def placebush(surface, pos, zoom=1, mirror=False):
+def placebush(surface, pos, zoom=1.0, mirror=False):
     sbush = flip(rotozoom(bush, 0, zoom), mirror, False)
     sbush.set_colorkey((170, 222, 135))
     surface.blit(sbush, pos)
 
 
-def placekozjol(surface, pos, zoom=1, mirror=False):
+def placekozjol(surface, pos, zoom=1.0, mirror=False):
     skozjol = flip(rotozoom(kozjol, 0, zoom), mirror, False)
     skozjol.set_colorkey((170, 222, 135))
     surface.blit(skozjol, pos)
+
 
 quality = 10
 
