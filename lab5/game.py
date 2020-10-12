@@ -4,7 +4,7 @@ from random import randint
 
 pygame.init()
 
-FPS = 2
+FPS = 30
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 900
 NUMBER_OF_BALLS = 5
@@ -93,8 +93,26 @@ def balls_move(balls):
         vx = ball.velocity[0]
         vy = ball.velocity[1]
         color = ball.color
-        pos = (x, y)
         radius = ball.radius
+        x += int(vx/FPS)
+        y += int(vy/FPS)
+        if x >= SCREEN_WIDTH - radius:
+            x = SCREEN_WIDTH - radius
+            vx = -vx
+        if x <= radius:
+            x = radius
+            vx = -vx
+        if y >= SCREEN_HEIGHT - radius:
+            y = SCREEN_HEIGHT - radius
+            vy = -vy
+        if y <= radius:
+            y = radius
+            vy = -vy
+        pos = (x, y)
+        velocity = (vx, vy)
+        ball.pos = pos
+        ball.velocity = velocity
+        balls[i] = ball
         circle(SCREEN, color, pos, radius)
 
 
