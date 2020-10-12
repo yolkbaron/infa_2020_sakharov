@@ -115,35 +115,35 @@ screen = pygame.display.set_mode(size=(800, 1130))
 screen.fill(WHITE)
 # mountains
 polygon(screen, GREY, [(0, 347), (95, 115), (165, 276), (272, 148), (473, 450), (619, 138), (667, 195),
-                                  (800, 40), (800, 665), (466, 665), (445, 656), (445, 600), (441, 597), (441, 576),
-                                  (437, 573), (433, 565), (417, 563),
-                                  (176, 563), (101, 574), (77, 574), (43, 579), (0, 595)])
+                       (800, 40), (800, 665), (466, 665), (445, 656), (445, 600), (441, 597), (441, 576),
+                       (437, 573), (433, 565), (417, 563),
+                       (176, 563), (101, 574), (77, 574), (43, 579), (0, 595)])
 # sky
 polygon(screen, BLUE, [(0, 347), (95, 115), (165, 276), (272, 148), (473, 450), (619, 138), (667, 195),
-                                  (800, 40), (800, 0), (0, 0)])
+                       (800, 40), (800, 0), (0, 0)])
 # grass
 polygon(screen, LIGHT_GREEN, [(800, 665), (466, 665), (445, 656), (445, 600), (441, 597), (441, 576), (437, 573),
-                                  (433, 565), (417, 563), (176, 563), (101, 574), (77, 574), (43, 579), (0, 595),
-                                  (0, 1130), [800, 1130]])
+                              (433, 565), (417, 563), (176, 563), (101, 574), (77, 574), (43, 579), (0, 595),
+                              (0, 1130), [800, 1130]])
 # black line
 polygon(screen, BLACK, [(0, 347), (95, 115), (165, 276), (272, 148), (473, 450), (619, 138), (667, 195), (800, 40),
-                            (800, 665), (466, 665), (445, 656), (445, 600), (441, 597), (441, 576), (437, 573),
-                            (433, 565), (417, 563), (176, 563),
-                            (101, 574), (77, 574), (43, 579), (0, 595)], 2)
+                        (800, 665), (466, 665), (445, 656), (445, 600), (441, 597), (441, 576), (437, 573),
+                        (433, 565), (417, 563), (176, 563),
+                        (101, 574), (77, 574), (43, 579), (0, 595)], 2)
 # bushes
-placebush(screen, (-10, 578), 0.23/quality, mirror=False)
-placebush(screen, (563, 667), 0.23/quality, mirror=False)
-placebush(screen, (516, 898), 0.6/quality, mirror=False)
-placebush(screen, (690, 607), 0.36/quality, mirror=True)
-placebush(screen, (679, 734), 0.6/quality, mirror=True)
-placebush(screen, (760, 1030), 0.32/quality, mirror=True)
+placebush(screen, (-10, 578), 0.23 / quality, mirror=False)
+placebush(screen, (563, 667), 0.23 / quality, mirror=False)
+placebush(screen, (516, 898), 0.6 / quality, mirror=False)
+placebush(screen, (690, 607), 0.36 / quality, mirror=True)
+placebush(screen, (679, 734), 0.6 / quality, mirror=True)
+placebush(screen, (760, 1030), 0.32 / quality, mirror=True)
 # animals
-placekozjol(screen, (283, 465), 0.4/quality, mirror=False)
-placekozjol(screen, (172, 583), 0.4/quality, mirror=False)
-placekozjol(screen, (325, 639), 0.4/quality, mirror=True)
+placekozjol(screen, (283, 465), 0.4 / quality, mirror=False)
+placekozjol(screen, (172, 583), 0.4 / quality, mirror=False)
+placekozjol(screen, (325, 639), 0.4 / quality, mirror=True)
 
-placekozjol(screen, (665, 593), 1.2/quality, mirror=True)
-placekozjol(screen, (-280, 715), 2.2/quality, mirror=False)
+placekozjol(screen, (665, 593), 1.2 / quality, mirror=True)
+placekozjol(screen, (-280, 715), 2.2 / quality, mirror=False)
 
 pygame.display.update()
 clock = pygame.time.Clock()
