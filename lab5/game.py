@@ -157,12 +157,12 @@ def click(click_balls, click_event, click_score):
             mouse_x = click_event.pos[0]
             mouse_y = click_event.pos[1]
             if (mouse_x - ball_x) * (mouse_x - ball_x) + (mouse_y - ball_y) * (mouse_y - ball_y) <= radius * radius:
-                click_score += 10
+                click_score += int(10*MIN_RADIUS/radius)
                 click_balls[len(click_balls) - i - 1] = create_ball()
                 missed = False
                 print("Scored")
     if missed:
-        click_score -= 5
+        click_score -= 10
     return click_score
 
 
