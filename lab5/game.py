@@ -81,6 +81,17 @@ class Ball:
         radius = self.radius
         circle(SCREEN, color, pos, radius)
 
+    def is_inside(self, pos):
+        ball_x = self.pos[0]
+        ball_y = self.pos[1]
+        radius = self.radius
+        mouse_x = pos[0]
+        mouse_y = pos[1]
+        if (mouse_x - ball_x) * (mouse_x - ball_x) + (mouse_y - ball_y) * (mouse_y - ball_y) <= radius * radius:
+            return True
+        else:
+            return False
+
     def new(self):
         """
         generates new ball with random color and radius in random place
@@ -142,27 +153,27 @@ def create_ball():
     return ball
 
 
-def click(click_balls, click_event, click_score):
+def click(click_balls, click_lectors, click_event, click_score):
     """
     checks if click was inside a ball
     and removes ball if so
     """
     missed = True
+    for i in range(len(click_lectors)):
+        if missed:
+            pass
+
     for i in range(len(click_balls)):
         if missed:
             ball = click_balls[len(click_balls) - i - 1]
-            ball_x = ball.pos[0]
-            ball_y = ball.pos[1]
             radius = ball.radius
-            mouse_x = click_event.pos[0]
-            mouse_y = click_event.pos[1]
-            if (mouse_x - ball_x) * (mouse_x - ball_x) + (mouse_y - ball_y) * (mouse_y - ball_y) <= radius * radius:
+            if ball.is_inside(click_event.pos):
                 click_score += int(10*MIN_RADIUS/radius)
                 click_balls[len(click_balls) - i - 1] = create_ball()
                 missed = False
                 print("Scored")
     if missed:
-        click_score -= 10
+        click_score -= 5
     return click_score
 
 
@@ -195,7 +206,7 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            score = click(balls, event, score)
+            score = click(balls, lectors, event, score)
     frame(balls, lectors)
     pygame.display.update()
 print("Score = ", score)
