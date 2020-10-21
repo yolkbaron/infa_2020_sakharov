@@ -1,6 +1,7 @@
 import pygame
 from pygame.draw import *
 from pygame.transform import *
+from pygame.font import *
 import os
 from random import uniform
 from random import randint
@@ -18,16 +19,15 @@ BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 FPS = 60
-DIFFICULTY = 1
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 900
 NUMBER_OF_BALLS = 3
-MAX_SPEED = 200
+MAX_SPEED = 300
 MIN_SPEED = 100
 MAX_RADIUS = 70
 MIN_RADIUS = 20
 MAX_TIME = 1
-MIN_TIME = 0.5
+MIN_TIME = 1
 IVANOV = pygame.image.load(os.path.join('ivanov.png'))
 PKOZHEVN = pygame.image.load(os.path.join('pkozhevn.png'))
 IVANOV.set_colorkey(WHITE)
@@ -49,6 +49,11 @@ class Ball:
         self.time_left = time_left
 
     def move(self):
+        """
+        Moves a ball, changes its color and time_left.
+        If the ball is dead a new ball is created
+        :return: None
+        """
         time_left = self.time_left
         life_time = self.life_time
         x = self.pos[0]
@@ -82,12 +87,21 @@ class Ball:
             self.new()
 
     def draw(self):
+        """
+        Draws a ball
+        :return: None
+        """
         color = self.color
         pos = self.pos
         radius = self.radius
         circle(SCREEN, color, pos, radius)
 
     def is_inside(self, pos):
+        """
+        Checks if pos is inside self
+        :param pos: (x, y)
+        :return: True if inside, False if not
+        """
         ball_x = self.pos[0]
         ball_y = self.pos[1]
         radius = self.radius
@@ -155,8 +169,8 @@ def create_ball():
     color = (0, 0, 255)
     x = randint(radius, SCREEN_WIDTH - radius)
     y = randint(radius, SCREEN_HEIGHT - radius)
-    vx = randint(-1, 1) * randint(MIN_SPEED, MAX_SPEED) * DIFFICULTY
-    vy = randint(-1, 1) * randint(MIN_SPEED, MAX_SPEED) * DIFFICULTY
+    vx = randint(-1, 1) * randint(MIN_SPEED, MAX_SPEED)
+    vy = randint(-1, 1) * randint(MIN_SPEED, MAX_SPEED)
     life_time = uniform(MIN_TIME, MAX_TIME)
     time_left = life_time
     pos = (x, y)
@@ -171,17 +185,17 @@ def click(click_balls, click_lectors, click_event, click_score):
     and removes ball if so
     """
     missed = True
-    for i in range(len(click_lectors)):
+    for click_i in range(len(click_lectors)):
         if missed:
             pass
 
-    for i in range(len(click_balls)):
+    for click_i in range(len(click_balls)):
         if missed:
-            ball = click_balls[len(click_balls) - i - 1]
+            ball = click_balls[len(click_balls) - click_i - 1]
             radius = ball.radius
             if ball.is_inside(click_event.pos):
                 click_score += int(10 * MIN_RADIUS / radius)
-                click_balls[len(click_balls) - i - 1] = create_ball()
+                click_balls[len(click_balls) - click_i - 1] = create_ball()
                 missed = False
                 print("Scored")
     if missed:
@@ -189,20 +203,24 @@ def click(click_balls, click_lectors, click_event, click_score):
     return click_score
 
 
-def frame(frame_balls, frame_lectors):
+def frame(frame_balls, frame_lectors, frame_score):
     SCREEN.fill(BLACK)
-    for i in range(len(frame_balls)):
-        ball = frame_balls[i]
+    for frame_i in range(len(frame_balls)):
+        ball = frame_balls[frame_i]
         ball.move()
         ball.draw()
-    for i in range(len(frame_lectors)):
-        lector = lectors[i]
+    for frame_i in range(len(frame_lectors)):
+        lector = lectors[frame_i]
         lector.move()
         lector.draw()
+    font = Font(None, 40)
+    score_surface = font.render('Score: ' + str(frame_score), False, WHITE)
+    score_surface.set_colorkey(BLACK)
+    SCREEN.blit(score_surface, (0, 0))
 
 
-ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (4 * MAX_SPEED, 0), IVANOV)
-pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (4 * MAX_SPEED, 0), PKOZHEVN)
+ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (3 * MAX_SPEED, 0), IVANOV)
+pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (3 * MAX_SPEED, 0), PKOZHEVN)
 lectors = [ivanov_surf, pkozhevn_surf]
 score = 0
 pygame.display.update()
@@ -219,7 +237,7 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             score = click(balls, lectors, event, score)
-    frame(balls, lectors)
+    frame(balls, lectors, score)
     pygame.display.update()
 print("Score = ", score)
 pygame.quit()
