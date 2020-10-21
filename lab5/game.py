@@ -40,21 +40,24 @@ SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
 class Ball:
-    def __init__(self, pos, velocity, color, radius, time_left):
+    def __init__(self, pos, velocity, color, radius, life_time, time_left):
         self.pos = pos
         self.velocity = velocity
         self.color = color
         self.radius = radius
+        self.life_time = life_time
         self.time_left = time_left
 
     def move(self):
         time_left = self.time_left
+        life_time = self.life_time
         x = self.pos[0]
         y = self.pos[1]
         vx = self.velocity[0]
         vy = self.velocity[1]
         radius = self.radius
         time_left -= 1 / FPS
+        color = ((1 - time_left / life_time) * 255, 0, (time_left / life_time) * 255)  # blue to red gradient
         x += int(vx / FPS)
         y += int(vy / FPS)
         if x >= SCREEN_WIDTH - radius:
@@ -74,6 +77,7 @@ class Ball:
         velocity = (vx, vy)
         self.pos = pos
         self.velocity = velocity
+        self.color = color
         if time_left <= 0:
             self.new()
 
@@ -103,6 +107,7 @@ class Ball:
         self.velocity = new_ball.velocity
         self.color = new_ball.color
         self.radius = new_ball.radius
+        self.life_time = new_ball.life_time
         self.time_left = new_ball.time_left
         return new_ball
 
@@ -122,12 +127,12 @@ class Lector:
         y += int(vy / FPS)
         if x >= SCREEN_WIDTH:
             self.surface = flip(self.surface, True, False)
-            y = randint(0, SCREEN_HEIGHT-130)
+            y = randint(0, SCREEN_HEIGHT - 130)
             x = SCREEN_WIDTH
             vx = -vx
         if x <= -100:
             self.surface = flip(self.surface, True, False)
-            y = randint(0, SCREEN_HEIGHT-130)
+            y = randint(0, SCREEN_HEIGHT - 130)
             x = -100
             vx = -vx
         pos = (x, y)
@@ -147,15 +152,16 @@ def create_ball():
     :return: this object
     """
     radius = randint(MIN_RADIUS, MAX_RADIUS)
-    color = COLORS[randint(0, 5)]
+    color = (0, 0, 255)
     x = randint(radius, SCREEN_WIDTH - radius)
     y = randint(radius, SCREEN_HEIGHT - radius)
     vx = randint(-1, 1) * randint(MIN_SPEED, MAX_SPEED) * DIFFICULTY
     vy = randint(-1, 1) * randint(MIN_SPEED, MAX_SPEED) * DIFFICULTY
-    time_left = uniform(MIN_TIME, MAX_TIME)
+    life_time = uniform(MIN_TIME, MAX_TIME)
+    time_left = life_time
     pos = (x, y)
     velocity = (vx, vy)
-    ball = Ball(pos, velocity, color, radius, time_left)
+    ball = Ball(pos, velocity, color, radius, life_time, time_left)
     return ball
 
 
@@ -174,7 +180,7 @@ def click(click_balls, click_lectors, click_event, click_score):
             ball = click_balls[len(click_balls) - i - 1]
             radius = ball.radius
             if ball.is_inside(click_event.pos):
-                click_score += int(10*MIN_RADIUS/radius)
+                click_score += int(10 * MIN_RADIUS / radius)
                 click_balls[len(click_balls) - i - 1] = create_ball()
                 missed = False
                 print("Scored")
@@ -195,8 +201,8 @@ def frame(frame_balls, frame_lectors):
         lector.draw()
 
 
-ivanov_surf = Lector((-100, SCREEN_HEIGHT-130), (4*MAX_SPEED, 0), IVANOV)
-pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (4*MAX_SPEED, 0), PKOZHEVN)
+ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (4 * MAX_SPEED, 0), IVANOV)
+pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (4 * MAX_SPEED, 0), PKOZHEVN)
 lectors = [ivanov_surf, pkozhevn_surf]
 score = 0
 pygame.display.update()
