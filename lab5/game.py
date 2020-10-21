@@ -23,7 +23,7 @@ SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 900
 NUMBER_OF_BALLS = 3
 MAX_SPEED = 300
-MIN_SPEED = 100
+MIN_SPEED = 200
 MAX_RADIUS = 70
 MIN_RADIUS = 20
 MAX_TIME = 1
@@ -159,6 +159,19 @@ class Lector:
         surface = self.surface
         SCREEN.blit(surface, pos)
 
+    def is_inside(self, pos):
+        x = self.pos[0]
+        y = self.pos[1]
+        surface = self.surface
+        if x + surface.get_width() > pos[0] > x and y + surface.get_height() > pos[1] > y:
+            color_at_pos = self.surface.get_at((pos[0] - x, pos[1] - y))
+            if color_at_pos[0] <= 5 and color_at_pos[1] <= 5 and color_at_pos[2] <= 5:
+                return False
+            else:
+                return True
+        else:
+            return False
+
 
 def create_ball():
     """
@@ -187,7 +200,15 @@ def click(click_balls, click_lectors, click_event, click_score):
     missed = True
     for click_i in range(len(click_lectors)):
         if missed:
-            pass
+            lector = lectors[len(click_lectors) - click_i - 1]
+            if lector.is_inside(click_event.pos):
+                click_score += 15
+                for other_lector in lectors:
+                    vx = -other_lector.velocity[0]
+                    vy = other_lector.velocity[1]
+                    other_lector.velocity = (vx, vy)
+                    other_lector.surface = flip(other_lector.surface, True, False)
+                missed = False
 
     for click_i in range(len(click_balls)):
         if missed:
@@ -197,7 +218,6 @@ def click(click_balls, click_lectors, click_event, click_score):
                 click_score += int(10 * MIN_RADIUS / radius)
                 click_balls[len(click_balls) - click_i - 1] = create_ball()
                 missed = False
-                print("Scored")
     if missed:
         click_score -= 5
     return click_score
@@ -217,7 +237,6 @@ def frame(frame_balls, frame_lectors, frame_score):
     score_surface = font.render('Score: ' + str(frame_score), False, WHITE)
     score_surface.set_colorkey(BLACK)
     SCREEN.blit(score_surface, (0, 0))
-
 
 ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (3 * MAX_SPEED, 0), IVANOV)
 pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (3 * MAX_SPEED, 0), PKOZHEVN)
