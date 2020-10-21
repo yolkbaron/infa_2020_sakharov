@@ -34,6 +34,8 @@ IVANOV.set_colorkey(WHITE)
 PKOZHEVN.set_colorkey(WHITE)
 IVANOV = rotozoom(IVANOV, 0, 0.5)
 PKOZHEVN = rotozoom(PKOZHEVN, 0, 0.16)
+IVANOV = flip(IVANOV, True, False)
+PKOZHEVN = flip(PKOZHEVN, True, False)
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
@@ -118,11 +120,15 @@ class Lector:
         vy = self.velocity[1]
         x += int(vx / FPS)
         y += int(vy / FPS)
-        if x >= SCREEN_WIDTH - 100:
-            x = SCREEN_WIDTH - 100
+        if x >= SCREEN_WIDTH:
+            self.surface = flip(self.surface, True, False)
+            y = randint(0, SCREEN_HEIGHT-130)
+            x = SCREEN_WIDTH
             vx = -vx
-        if x <= 0:
-            x = 0
+        if x <= -100:
+            self.surface = flip(self.surface, True, False)
+            y = randint(0, SCREEN_HEIGHT-130)
+            x = -100
             vx = -vx
         pos = (x, y)
         velocity = (vx, vy)
@@ -189,8 +195,8 @@ def frame(frame_balls, frame_lectors):
         lector.draw()
 
 
-ivanov_surf = Lector((0, SCREEN_HEIGHT-130), (4*MAX_SPEED, 0), IVANOV)
-pkozhevn_surf = Lector((SCREEN_WIDTH-100, 0), (4*MAX_SPEED, 0), PKOZHEVN)
+ivanov_surf = Lector((-100, SCREEN_HEIGHT-130), (4*MAX_SPEED, 0), IVANOV)
+pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (4*MAX_SPEED, 0), PKOZHEVN)
 lectors = [ivanov_surf, pkozhevn_surf]
 score = 0
 pygame.display.update()
