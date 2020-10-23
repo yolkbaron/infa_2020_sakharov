@@ -1,7 +1,4 @@
 import pygame
-from pygame.draw import *
-from pygame.transform import *
-from pygame.font import *
 import os
 from random import uniform
 from random import randint
@@ -22,20 +19,20 @@ FPS = 60
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 900
 NUMBER_OF_BALLS = 3
-MAX_SPEED = 300
-MIN_SPEED = 200
+MAX_SPEED = 500
+MIN_SPEED = 400
 MAX_RADIUS = 70
 MIN_RADIUS = 20
-MAX_TIME = 1
+MAX_TIME = 2
 MIN_TIME = 1
 IVANOV = pygame.image.load(os.path.join('ivanov.png'))
 PKOZHEVN = pygame.image.load(os.path.join('pkozhevn.png'))
 IVANOV.set_colorkey(WHITE)
 PKOZHEVN.set_colorkey(WHITE)
-IVANOV = rotozoom(IVANOV, 0, 0.5)
-PKOZHEVN = rotozoom(PKOZHEVN, 0, 0.16)
-IVANOV = flip(IVANOV, True, False)
-PKOZHEVN = flip(PKOZHEVN, True, False)
+IVANOV = pygame.transform.rotozoom(IVANOV, 0, 0.5)
+PKOZHEVN = pygame.transform.rotozoom(PKOZHEVN, 0, 0.16)
+IVANOV = pygame.transform.flip(IVANOV, True, False)
+PKOZHEVN = pygame.transform.flip(PKOZHEVN, True, False)
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
@@ -94,7 +91,7 @@ class Ball:
         color = self.color
         pos = self.pos
         radius = self.radius
-        circle(SCREEN, color, pos, radius)
+        pygame.draw.circle(SCREEN, color, pos, radius)
 
     def is_inside(self, pos):
         """
@@ -140,12 +137,12 @@ class Lector:
         x += int(vx / FPS)
         y += int(vy / FPS)
         if x >= SCREEN_WIDTH:
-            self.surface = flip(self.surface, True, False)
+            self.surface = pygame.transform.flip(self.surface, True, False)
             y = randint(0, SCREEN_HEIGHT - 130)
             x = SCREEN_WIDTH
             vx = -vx
         if x <= -100:
-            self.surface = flip(self.surface, True, False)
+            self.surface = pygame.transform.flip(self.surface, True, False)
             y = randint(0, SCREEN_HEIGHT - 130)
             x = -100
             vx = -vx
@@ -202,12 +199,12 @@ def click(click_balls, click_lectors, click_event, click_score):
         if missed:
             lector = lectors[len(click_lectors) - click_i - 1]
             if lector.is_inside(click_event.pos):
-                click_score += 15
+                click_score += 2
                 for other_lector in lectors:
                     vx = -other_lector.velocity[0]
                     vy = other_lector.velocity[1]
                     other_lector.velocity = (vx, vy)
-                    other_lector.surface = flip(other_lector.surface, True, False)
+                    other_lector.surface = pygame.transform.flip(other_lector.surface, True, False)
                 missed = False
 
     for click_i in range(len(click_balls)):
@@ -219,11 +216,11 @@ def click(click_balls, click_lectors, click_event, click_score):
                 click_balls[len(click_balls) - click_i - 1] = create_ball()
                 missed = False
     if missed:
-        click_score -= 5
+        click_score -= 10
     return click_score
 
 
-def frame(frame_balls, frame_lectors, frame_score):
+def main_frame(frame_balls, frame_lectors, frame_score):
     SCREEN.fill(BLACK)
     for frame_i in range(len(frame_balls)):
         ball = frame_balls[frame_i]
@@ -233,21 +230,105 @@ def frame(frame_balls, frame_lectors, frame_score):
         lector = lectors[frame_i]
         lector.move()
         lector.draw()
-    font = Font(None, 40)
-    score_surface = font.render('Score: ' + str(frame_score), False, WHITE)
+    font = pygame.font.Font(None, 40)
+    score_surface = font.render('Score: ' + str(frame_score), True, WHITE)
+    name_surface = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
     score_surface.set_colorkey(BLACK)
+    name_surface.set_colorkey(BLACK)
     SCREEN.blit(score_surface, (0, 0))
+    SCREEN.blit(name_surface, (0, 40))
 
-ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (3 * MAX_SPEED, 0), IVANOV)
-pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (3 * MAX_SPEED, 0), PKOZHEVN)
+
+def player_name_frame():
+    SCREEN.fill(BLACK)
+    font = pygame.font.Font(None, 80)
+    name_surface = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
+    name_surface.set_colorkey(BLACK)
+    SCREEN.blit(name_surface, (0, 0))
+
+
+def keyboard_input(input_string, key):
+    if key == pygame.K_q:
+        input_string += 'q'
+    if key == pygame.K_w:
+        input_string += 'w'
+    if key == pygame.K_e:
+        input_string += 'e'
+    if key == pygame.K_r:
+        input_string += 'r'
+    if key == pygame.K_t:
+        input_string += 't'
+    if key == pygame.K_y:
+        input_string += 'y'
+    if key == pygame.K_u:
+        input_string += 'u'
+    if key == pygame.K_i:
+        input_string += 'i'
+    if key == pygame.K_o:
+        input_string += 'o'
+    if key == pygame.K_p:
+        input_string += 'p'
+    if key == pygame.K_a:
+        input_string += 'a'
+    if key == pygame.K_s:
+        input_string += 's'
+    if key == pygame.K_d:
+        input_string += 'd'
+    if key == pygame.K_f:
+        input_string += 'f'
+    if key == pygame.K_g:
+        input_string += 'g'
+    if key == pygame.K_h:
+        input_string += 'h'
+    if key == pygame.K_j:
+        input_string += 'j'
+    if key == pygame.K_k:
+        input_string += 'k'
+    if key == pygame.K_l:
+        input_string += 'l'
+    if key == pygame.K_z:
+        input_string += 'z'
+    if key == pygame.K_x:
+        input_string += 'x'
+    if key == pygame.K_c:
+        input_string += 'c'
+    if key == pygame.K_v:
+        input_string += 'v'
+    if key == pygame.K_b:
+        input_string += 'b'
+    if key == pygame.K_n:
+        input_string += 'n'
+    if key == pygame.K_m:
+        input_string += 'm'
+    return input_string
+
+
+ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (2 * MAX_SPEED, 0), IVANOV)
+pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (2 * MAX_SPEED, 0), PKOZHEVN)
 lectors = [ivanov_surf, pkozhevn_surf]
 score = 0
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
+name_received = False
 balls = []
 for i in range(NUMBER_OF_BALLS):
     balls.append(create_ball())
+
+PLAYER_NAME = ''
+while not (name_received or finished):
+    clock.tick(FPS)
+    for event in pygame.event.get():
+        if not name_received:
+            if event.type == pygame.QUIT:
+                finished = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    name_received = True
+                else:
+                    PLAYER_NAME = keyboard_input(PLAYER_NAME, event.key)
+    player_name_frame()
+    pygame.display.update()
 
 while not finished:
     clock.tick(FPS)
@@ -256,7 +337,8 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             score = click(balls, lectors, event, score)
-    frame(balls, lectors, score)
+    main_frame(balls, lectors, score)
     pygame.display.update()
-print("Score = ", score)
+print("Score =", score)
+
 pygame.quit()
