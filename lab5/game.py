@@ -327,13 +327,13 @@ def main_frame(frame_balls, frame_lectors, frame_score, player_name):
 
 def player_name_frame(player_name):
     SCREEN.fill(BLACK)
-    font = pygame.font.Font(None, 80)
-    name_surface_1 = font.render('No more than 12 characters', True, WHITE)
-    name_surface_2 = font.render('Player name: ' + player_name, True, WHITE)
+    font = pygame.font.Font(None, 40)
+    name_surface_1 = font.render('No more than 12 characters and at least 3 characters', True, WHITE)
+    name_surface_2 = font.render('Enter player name: ' + player_name, True, WHITE)
     name_surface_3 = font.render('Press \'Enter\' to finish', True, WHITE)
     SCREEN.blit(name_surface_1, (0, 0))
-    SCREEN.blit(name_surface_2, (0, 80))
-    SCREEN.blit(name_surface_3, (0, 160))
+    SCREEN.blit(name_surface_2, (0, 40))
+    SCREEN.blit(name_surface_3, (0, 80))
 
 
 def leaderboard_frame(frame_leaderboard, player_name):
@@ -351,6 +351,10 @@ def leaderboard_frame(frame_leaderboard, player_name):
     for i_frame in range(len(name_surfaces)):
         name_surface = name_surfaces[i_frame]
         SCREEN.blit(name_surface, (0, i_frame * 40))
-
-
+    if not current_player_is_shown:
+        place = 1 + sorted_leaderboard.index(player_name)
+        three_dots = font.render('...', True, WHITE)
+        current_player = font.render(str(place) + ')' + player_name + ': ' + str(frame_leaderboard[player_name]), True, WHITE)
+        SCREEN.blit(three_dots, (0, 10*40))
+        SCREEN.blit(current_player, (0, 11*40))
 main()
