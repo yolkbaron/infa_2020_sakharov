@@ -247,73 +247,31 @@ def player_name_frame():
     SCREEN.blit(name_surface, (0, 0))
 
 
-def keyboard_input(input_string, key):
-    if key == pygame.K_q:
-        input_string += 'q'
-    if key == pygame.K_w:
-        input_string += 'w'
-    if key == pygame.K_e:
-        input_string += 'e'
-    if key == pygame.K_r:
-        input_string += 'r'
-    if key == pygame.K_t:
-        input_string += 't'
-    if key == pygame.K_y:
-        input_string += 'y'
-    if key == pygame.K_u:
-        input_string += 'u'
-    if key == pygame.K_i:
-        input_string += 'i'
-    if key == pygame.K_o:
-        input_string += 'o'
-    if key == pygame.K_p:
-        input_string += 'p'
-    if key == pygame.K_a:
-        input_string += 'a'
-    if key == pygame.K_s:
-        input_string += 's'
-    if key == pygame.K_d:
-        input_string += 'd'
-    if key == pygame.K_f:
-        input_string += 'f'
-    if key == pygame.K_g:
-        input_string += 'g'
-    if key == pygame.K_h:
-        input_string += 'h'
-    if key == pygame.K_j:
-        input_string += 'j'
-    if key == pygame.K_k:
-        input_string += 'k'
-    if key == pygame.K_l:
-        input_string += 'l'
-    if key == pygame.K_z:
-        input_string += 'z'
-    if key == pygame.K_x:
-        input_string += 'x'
-    if key == pygame.K_c:
-        input_string += 'c'
-    if key == pygame.K_v:
-        input_string += 'v'
-    if key == pygame.K_b:
-        input_string += 'b'
-    if key == pygame.K_n:
-        input_string += 'n'
-    if key == pygame.K_m:
-        input_string += 'm'
-    return input_string
+def keyboard_input(key_down_event):
+    letter = ''
+    key = key_down_event.key
+    if 48 <= key <= 57:
+        letter = chr(key)
+    if 97 <= key <= 122:
+        letter = key_down_event.unicode
+    return PLAYER_NAME + letter
 
 
 ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (2 * MAX_SPEED, 0), IVANOV)
 pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (2 * MAX_SPEED, 0), PKOZHEVN)
 lectors = [ivanov_surf, pkozhevn_surf]
-score = 0
-pygame.display.update()
+
 clock = pygame.time.Clock()
+score = 0
 finished = False
 name_received = False
 balls = []
 for i in range(NUMBER_OF_BALLS):
     balls.append(create_ball())
+file = open('leaderboard.txt', 'r')
+
+for line in file:
+    line = line.rstrip()
 
 PLAYER_NAME = ''
 while not (name_received or finished):
@@ -326,7 +284,7 @@ while not (name_received or finished):
                 if event.key == pygame.K_RETURN:
                     name_received = True
                 else:
-                    PLAYER_NAME = keyboard_input(PLAYER_NAME, event.key)
+                    PLAYER_NAME = keyboard_input(event)
     player_name_frame()
     pygame.display.update()
 
