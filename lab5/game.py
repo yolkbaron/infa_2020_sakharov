@@ -23,8 +23,8 @@ MAX_SPEED = 500
 MIN_SPEED = 400
 MAX_RADIUS = 70
 MIN_RADIUS = 20
-MAX_TIME = 2
-MIN_TIME = 1
+MAX_TIME = 3
+MIN_TIME = 2
 IVANOV = pygame.image.load(os.path.join('ivanov.png'))
 PKOZHEVN = pygame.image.load(os.path.join('pkozhevn.png'))
 IVANOV.set_colorkey(WHITE)
@@ -34,6 +34,88 @@ PKOZHEVN = pygame.transform.rotozoom(PKOZHEVN, 0, 0.16)
 IVANOV = pygame.transform.flip(IVANOV, True, False)
 PKOZHEVN = pygame.transform.flip(PKOZHEVN, True, False)
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+PLAYER_NAME = ""
+
+
+def main():
+    global PLAYER_NAME
+    ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (2 * MAX_SPEED, 0), IVANOV)
+    pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (2 * MAX_SPEED, 0), PKOZHEVN)
+    lectors = [ivanov_surf, pkozhevn_surf]
+
+    clock = pygame.time.Clock()
+    score = 0
+    finished = False
+    name_received = False
+    save = False
+    balls = []
+    for i in range(NUMBER_OF_BALLS):
+        balls.append(create_ball())
+
+    # loop for entering player name
+    while not (name_received or finished):
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if len(PLAYER_NAME) == 12:
+                name_received = True
+            if not name_received:
+                if event.type == pygame.QUIT:
+                    finished = True
+                if event.type == pygame.KEYDOWN:
+                    key = event.key
+                    # for Enter
+                    if key == pygame.K_RETURN:
+                        name_received = True
+                    # for numbers
+                    if 48 <= key <= 57:
+                        PLAYER_NAME += chr(key)
+                    # for letters
+                    if 97 <= key <= 122:
+                        PLAYER_NAME += event.unicode
+                    if key == pygame.K_BACKSPACE:
+                        PLAYER_NAME = PLAYER_NAME[:-1]
+        player_name_frame()
+        pygame.display.update()
+
+    # main loop
+    while not (finished or save):
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                score = click(balls, lectors, event, score)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:
+                    save = True
+        main_frame(balls, lectors, score)
+        pygame.display.update()
+
+    # saving score if leaderboard[PLAYER_NAME] is less than score or doesn't exist
+    if save:
+        leaderboard = {}
+        with open('leaderboard.txt', 'r') as file:
+            for line in file:
+                line = line.rstrip()
+                name_from_file = line.split('$')[0]
+                score_from_file = int(line.split('$')[1])
+                leaderboard[name_from_file] = score_from_file
+        if PLAYER_NAME in leaderboard:
+            if leaderboard[PLAYER_NAME] < score:
+                leaderboard[PLAYER_NAME] = score
+        else:
+            leaderboard[PLAYER_NAME] = score
+        with open('leaderboard.txt', 'w') as file:
+            for name in leaderboard:
+                file.write(name + '$' + str(leaderboard[name]) + '\n')
+        while not finished:
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    finished = True
+            leaderboard_frame(leaderboard)
+            pygame.display.update()
+        pygame.quit()
 
 
 class Ball:
@@ -197,10 +279,10 @@ def click(click_balls, click_lectors, click_event, click_score):
     missed = True
     for click_i in range(len(click_lectors)):
         if missed:
-            lector = lectors[len(click_lectors) - click_i - 1]
+            lector = click_lectors[len(click_lectors) - click_i - 1]
             if lector.is_inside(click_event.pos):
-                click_score += 2
-                for other_lector in lectors:
+                click_score += 3
+                for other_lector in click_lectors:
                     vx = -other_lector.velocity[0]
                     vy = other_lector.velocity[1]
                     other_lector.velocity = (vx, vy)
@@ -227,7 +309,7 @@ def main_frame(frame_balls, frame_lectors, frame_score):
         ball.move()
         ball.draw()
     for frame_i in range(len(frame_lectors)):
-        lector = lectors[frame_i]
+        lector = frame_lectors[frame_i]
         lector.move()
         lector.draw()
     font = pygame.font.Font(None, 40)
@@ -253,79 +335,21 @@ def player_name_frame():
     SCREEN.blit(name_surface_3, (0, 160))
 
 
-def keyboard_input(key_down_event):
-    letter = ''
-    key = key_down_event.key
-    # for numbers
-    if 48 <= key <= 57:
-        letter = chr(key)
-    # for letters
-    if 97 <= key <= 122:
-        letter = key_down_event.unicode
-    return PLAYER_NAME + letter
+def leaderboard_frame(frame_leaderboard):
+    SCREEN.fill(BLACK)
+    font = pygame.font.Font(None, 40)
+    sorted_leaderboard = sorted(frame_leaderboard, key=lambda frame_key: frame_leaderboard[frame_key])
+    current_player_is_shown = False
+    name_surfaces = []
+    for i_frame in range(min(10, len(sorted_leaderboard))):
+        frame_name = sorted_leaderboard[i_frame]
+        if frame_name == PLAYER_NAME:
+            current_player_is_shown = True
+        frame_score = frame_leaderboard[frame_name]
+        name_surfaces.append(font.render(str(i_frame+1) + ')' + frame_name + ': ' + str(frame_score), True, WHITE))
+    for i_frame in range(len(name_surfaces)):
+        name_surface = name_surfaces[i_frame]
+        SCREEN.blit(name_surface, (0, i_frame * 40))
 
 
-ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (2 * MAX_SPEED, 0), IVANOV)
-pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (2 * MAX_SPEED, 0), PKOZHEVN)
-lectors = [ivanov_surf, pkozhevn_surf]
-
-clock = pygame.time.Clock()
-score = 0
-finished = False
-name_received = False
-save = False
-balls = []
-for i in range(NUMBER_OF_BALLS):
-    balls.append(create_ball())
-
-PLAYER_NAME = ''
-# cycle for entering player name
-while not (name_received or finished):
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if len(PLAYER_NAME) == 12:
-            name_received = True
-        if not name_received:
-            if event.type == pygame.QUIT:
-                finished = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    name_received = True
-                else:
-                    PLAYER_NAME = keyboard_input(event)
-    player_name_frame()
-    pygame.display.update()
-
-# main cycle
-while not finished:
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            score = click(balls, lectors, event, score)
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_s:
-                save = True
-                finished = True
-    main_frame(balls, lectors, score)
-    pygame.display.update()
-
-# saving score if leaderboard[PLAYER_NAME] is less than score or doesn't exist
-if save:
-    leaderboard = {}
-    with open('leaderboard.txt', 'r') as file:
-        for line in file:
-            line = line.rstrip()
-            name_from_file = line.split('$')[0]
-            score_from_file = int(line.split('$')[1])
-            leaderboard[name_from_file] = score_from_file
-    if PLAYER_NAME in leaderboard:
-        if leaderboard[PLAYER_NAME] < score:
-            leaderboard[PLAYER_NAME] = score
-    else:
-        leaderboard[PLAYER_NAME] = score
-    with open('leaderboard.txt', 'w') as file:
-        for name in leaderboard:
-            file.write(name + '#' + str(leaderboard[name]))
-pygame.quit()
+main()
