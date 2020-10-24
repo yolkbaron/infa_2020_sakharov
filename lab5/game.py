@@ -233,25 +233,33 @@ def main_frame(frame_balls, frame_lectors, frame_score):
     font = pygame.font.Font(None, 40)
     score_surface = font.render('Score: ' + str(frame_score), True, WHITE)
     name_surface = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
+    save_surface = font.render('Press \'S\' to save score', True, WHITE)
     score_surface.set_colorkey(BLACK)
     name_surface.set_colorkey(BLACK)
+    save_surface.set_colorkey(BLACK)
     SCREEN.blit(score_surface, (0, 0))
     SCREEN.blit(name_surface, (0, 40))
+    SCREEN.blit(save_surface, (0, 80))
 
 
 def player_name_frame():
     SCREEN.fill(BLACK)
     font = pygame.font.Font(None, 80)
-    name_surface = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
-    name_surface.set_colorkey(BLACK)
-    SCREEN.blit(name_surface, (0, 0))
+    name_surface_1 = font.render('No more than 12 characters', True, WHITE)
+    name_surface_2 = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
+    name_surface_3 = font.render('Press \'Enter\' to finish', True, WHITE)
+    SCREEN.blit(name_surface_1, (0, 0))
+    SCREEN.blit(name_surface_2, (0, 80))
+    SCREEN.blit(name_surface_3, (0, 160))
 
 
 def keyboard_input(key_down_event):
     letter = ''
     key = key_down_event.key
+    # for numbers
     if 48 <= key <= 57:
         letter = chr(key)
+    # for letters
     if 97 <= key <= 122:
         letter = key_down_event.unicode
     return PLAYER_NAME + letter
@@ -265,18 +273,18 @@ clock = pygame.time.Clock()
 score = 0
 finished = False
 name_received = False
+save = False
 balls = []
 for i in range(NUMBER_OF_BALLS):
     balls.append(create_ball())
-file = open('leaderboard.txt', 'r')
-
-for line in file:
-    line = line.rstrip()
 
 PLAYER_NAME = ''
+# cycle for entering player name
 while not (name_received or finished):
     clock.tick(FPS)
     for event in pygame.event.get():
+        if len(PLAYER_NAME) == 12:
+            name_received = True
         if not name_received:
             if event.type == pygame.QUIT:
                 finished = True
@@ -288,6 +296,7 @@ while not (name_received or finished):
     player_name_frame()
     pygame.display.update()
 
+# main cycle
 while not finished:
     clock.tick(FPS)
     for event in pygame.event.get():
@@ -295,8 +304,28 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             score = click(balls, lectors, event, score)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                save = True
+                finished = True
     main_frame(balls, lectors, score)
     pygame.display.update()
-print("Score =", score)
 
+# saving score if leaderboard[PLAYER_NAME] is less than score or doesn't exist
+if save:
+    leaderboard = {}
+    with open('leaderboard.txt', 'r') as file:
+        for line in file:
+            line = line.rstrip()
+            name_from_file = line.split('$')[0]
+            score_from_file = int(line.split('$')[1])
+            leaderboard[name_from_file] = score_from_file
+    if PLAYER_NAME in leaderboard:
+        if leaderboard[PLAYER_NAME] < score:
+            leaderboard[PLAYER_NAME] = score
+    else:
+        leaderboard[PLAYER_NAME] = score
+    with open('leaderboard.txt', 'w') as file:
+        for name in leaderboard:
+            file.write(name + '#' + str(leaderboard[name]))
 pygame.quit()
