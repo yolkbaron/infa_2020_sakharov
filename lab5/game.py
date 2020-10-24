@@ -34,11 +34,9 @@ PKOZHEVN = pygame.transform.rotozoom(PKOZHEVN, 0, 0.16)
 IVANOV = pygame.transform.flip(IVANOV, True, False)
 PKOZHEVN = pygame.transform.flip(PKOZHEVN, True, False)
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-PLAYER_NAME = ""
 
 
 def main():
-    global PLAYER_NAME
     ivanov_surf = Lector((-100, SCREEN_HEIGHT - 130), (2 * MAX_SPEED, 0), IVANOV)
     pkozhevn_surf = Lector((SCREEN_WIDTH, 0), (2 * MAX_SPEED, 0), PKOZHEVN)
     lectors = [ivanov_surf, pkozhevn_surf]
@@ -49,6 +47,7 @@ def main():
     name_received = False
     save = False
     balls = []
+    player_name = ''
     for i in range(NUMBER_OF_BALLS):
         balls.append(create_ball())
 
@@ -56,25 +55,27 @@ def main():
     while not (name_received or finished):
         clock.tick(FPS)
         for event in pygame.event.get():
-            if len(PLAYER_NAME) == 12:
-                name_received = True
+            if len(player_name) == 12:
+                max_letters = True
+            else:
+                max_letters = False
             if not name_received:
                 if event.type == pygame.QUIT:
                     finished = True
                 if event.type == pygame.KEYDOWN:
                     key = event.key
-                    # for Enter
-                    if key == pygame.K_RETURN:
+                    # for Enter - start game
+                    if key == pygame.K_RETURN and len(player_name) >= 3:
                         name_received = True
                     # for numbers
-                    if 48 <= key <= 57:
-                        PLAYER_NAME += chr(key)
+                    if 48 <= key <= 57 and not max_letters:
+                        player_name += chr(key)
                     # for letters
-                    if 97 <= key <= 122:
-                        PLAYER_NAME += event.unicode
+                    if 97 <= key <= 122 and not max_letters:
+                        player_name += event.unicode
                     if key == pygame.K_BACKSPACE:
-                        PLAYER_NAME = PLAYER_NAME[:-1]
-        player_name_frame()
+                        player_name = player_name[:-1]
+        player_name_frame(player_name)
         pygame.display.update()
 
     # main loop
@@ -88,10 +89,10 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
                     save = True
-        main_frame(balls, lectors, score)
+        main_frame(balls, lectors, score, player_name)
         pygame.display.update()
 
-    # saving score if leaderboard[PLAYER_NAME] is less than score or doesn't exist
+    # saving score if leaderboard[player_name] is less than score or doesn't exist
     if save:
         leaderboard = {}
         with open('leaderboard.txt', 'r') as file:
@@ -100,11 +101,11 @@ def main():
                 name_from_file = line.split('$')[0]
                 score_from_file = int(line.split('$')[1])
                 leaderboard[name_from_file] = score_from_file
-        if PLAYER_NAME in leaderboard:
-            if leaderboard[PLAYER_NAME] < score:
-                leaderboard[PLAYER_NAME] = score
+        if player_name in leaderboard:
+            if leaderboard[player_name] < score:
+                leaderboard[player_name] = score
         else:
-            leaderboard[PLAYER_NAME] = score
+            leaderboard[player_name] = score
         with open('leaderboard.txt', 'w') as file:
             for name in leaderboard:
                 file.write(name + '$' + str(leaderboard[name]) + '\n')
@@ -113,7 +114,7 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
-            leaderboard_frame(leaderboard)
+            leaderboard_frame(leaderboard, player_name)
             pygame.display.update()
         pygame.quit()
 
@@ -302,7 +303,7 @@ def click(click_balls, click_lectors, click_event, click_score):
     return click_score
 
 
-def main_frame(frame_balls, frame_lectors, frame_score):
+def main_frame(frame_balls, frame_lectors, frame_score, player_name):
     SCREEN.fill(BLACK)
     for frame_i in range(len(frame_balls)):
         ball = frame_balls[frame_i]
@@ -314,7 +315,7 @@ def main_frame(frame_balls, frame_lectors, frame_score):
         lector.draw()
     font = pygame.font.Font(None, 40)
     score_surface = font.render('Score: ' + str(frame_score), True, WHITE)
-    name_surface = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
+    name_surface = font.render('Player name: ' + player_name, True, WHITE)
     save_surface = font.render('Press \'S\' to save score', True, WHITE)
     score_surface.set_colorkey(BLACK)
     name_surface.set_colorkey(BLACK)
@@ -324,26 +325,26 @@ def main_frame(frame_balls, frame_lectors, frame_score):
     SCREEN.blit(save_surface, (0, 80))
 
 
-def player_name_frame():
+def player_name_frame(player_name):
     SCREEN.fill(BLACK)
     font = pygame.font.Font(None, 80)
     name_surface_1 = font.render('No more than 12 characters', True, WHITE)
-    name_surface_2 = font.render('Player name: ' + PLAYER_NAME, True, WHITE)
+    name_surface_2 = font.render('Player name: ' + player_name, True, WHITE)
     name_surface_3 = font.render('Press \'Enter\' to finish', True, WHITE)
     SCREEN.blit(name_surface_1, (0, 0))
     SCREEN.blit(name_surface_2, (0, 80))
     SCREEN.blit(name_surface_3, (0, 160))
 
 
-def leaderboard_frame(frame_leaderboard):
+def leaderboard_frame(frame_leaderboard, player_name):
     SCREEN.fill(BLACK)
     font = pygame.font.Font(None, 40)
-    sorted_leaderboard = sorted(frame_leaderboard, key=lambda frame_key: frame_leaderboard[frame_key])
+    sorted_leaderboard = sorted(frame_leaderboard, key=lambda frame_key: frame_leaderboard[frame_key], reverse=True)
     current_player_is_shown = False
     name_surfaces = []
     for i_frame in range(min(10, len(sorted_leaderboard))):
         frame_name = sorted_leaderboard[i_frame]
-        if frame_name == PLAYER_NAME:
+        if frame_name == player_name:
             current_player_is_shown = True
         frame_score = frame_leaderboard[frame_name]
         name_surfaces.append(font.render(str(i_frame+1) + ')' + frame_name + ': ' + str(frame_score), True, WHITE))
