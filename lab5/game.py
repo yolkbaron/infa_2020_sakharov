@@ -347,14 +347,17 @@ def leaderboard_frame(frame_leaderboard, player_name):
         if frame_name == player_name:
             current_player_is_shown = True
         frame_score = frame_leaderboard[frame_name]
-        name_surfaces.append(font.render(str(i_frame+1) + ')' + frame_name + ': ' + str(frame_score), True, WHITE))
+        name_surfaces.append(font.render(str(i_frame + 1) + ')' + frame_name + ': ' + str(frame_score), True, WHITE))
     for i_frame in range(len(name_surfaces)):
         name_surface = name_surfaces[i_frame]
         SCREEN.blit(name_surface, (0, i_frame * 40))
     if not current_player_is_shown:
         place = 1 + sorted_leaderboard.index(player_name)
         three_dots = font.render('...', True, WHITE)
-        current_player = font.render(str(place) + ')' + player_name + ': ' + str(frame_leaderboard[player_name]), True, WHITE)
-        SCREEN.blit(three_dots, (0, 10*40))
-        SCREEN.blit(current_player, (0, 11*40))
+        current_player = font.render(str(place) + ')' + player_name + ': ' + str(frame_leaderboard[player_name]), True,
+                                     WHITE)
+        SCREEN.blit(three_dots, (0, 10 * 40))
+        SCREEN.blit(current_player, (0, 11 * 40))
+
+
 main()
