@@ -26,15 +26,15 @@ class Cannon:
         self.shell_num = None  # TODO: оставшееся на данный момент количество снарядов
         self.direction = math.pi / 4
 
-    def aim(self, x, y):
+    def aim(self, pos):
         """
         Меняет направление direction так, чтобы он из точки
          (self.x, self.y) указывал в точку (x, y).
-        :param x: координата x, в которую целимся
-        :param y: координата y, в которую целимся
+        :param pos: tuple (x, y) of mouse coords
         :return: None
         """
-        pass  # TODO
+        x, y = pos
+        self.direction = math.atan(y/x)
 
     def fire(self, dt):
         """
@@ -58,6 +58,7 @@ class Shell:
         self.x, self.y = x, y
         self.Vx, self.Vy = Vx, Vy
         self.r = Shell.standard_radius
+        self.deleted = False
 
     def move(self, dt):
         """
@@ -72,7 +73,8 @@ class Shell:
         self.y += self.Vy*dt + ay*(dt**2)/2
         self.Vx += ax*dt
         self.Vy += ay*dt
-        # TODO: Уничтожать (в статус deleted) снаряд, когда он касается земли.
+        if not (self.x in (0, SCREEN_WIDTH) and self.y in (0, SCREEN_HEIGHT)):
+            self.deleted = True
 
     def draw(self):
         pygame.draw.circle(screen, self.color,
