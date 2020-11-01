@@ -23,8 +23,9 @@ class Cannon:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.shell_num = None  # TODO: оставшееся на данный момент количество снарядов
+        self.shell_num = 5  # TODO: оставшееся на данный момент количество снарядов
         self.direction = math.pi / 4
+        self.color = BLACK
 
     def aim(self, pos):
         """
@@ -44,7 +45,8 @@ class Cannon:
         :param dt:  длительность клика мышки, мс
         :return: экземпляр снаряда типа Shell
         """
-        pass
+        if self.shell_num > 0:
+            self.shell_num -= 1
 
     def draw(self):
         pygame.draw.circle(screen, self.color,
@@ -71,9 +73,9 @@ class Shell:
         ax, ay = 0, GRAVITY_ACCELERATION
         self.x += self.Vx*dt + ax*(dt**2)/2
         self.y += self.Vy*dt + ay*(dt**2)/2
-        self.Vx += ax*dt
-        self.Vy += ay*dt
-        if not (self.x in (0, SCREEN_WIDTH) and self.y in (0, SCREEN_HEIGHT)):
+        self.Vx -= ax*dt
+        self.Vy -= ay*dt
+        if not (self.x in (0 + self.r, SCREEN_WIDTH - self.r) and self.y in (0 + self.r, SCREEN_HEIGHT - self.r)):
             self.deleted = True
 
     def draw(self):
@@ -112,7 +114,18 @@ class Target:
         self.y += self.Vy * dt
         self.Vx += ax * dt
         self.Vy += ay * dt
-        # TODO: Шарики-мишени должны отражаться от стенок
+        if self.x >= SCREEN_WIDTH - self.r:
+            self.x = SCREEN_WIDTH - self.r
+            self.Vx = -self.Vx
+        if self.x <= 0 + self.r:
+            self.x = 0 + self.r
+            self.Vx = -self.Vx
+        if self.y >= SCREEN_HEIGHT - self.r:
+            self.y = SCREEN_HEIGHT - self.r
+            self.Vy = -self.Vy
+        if self.y <= 0 + self.r:
+            self.y = 0 + self.r
+            self.Vy = -self.Vy
 
     def draw(self):
         pygame.draw.circle(screen, self.color,
@@ -160,7 +173,7 @@ def game_main_loop():
                 print('Click!')
 
         pygame.display.update()
-        screen.fill(GRAY)
+        screen.fill(BLACK)
 
         for target in targets:
             target.move(dt)
