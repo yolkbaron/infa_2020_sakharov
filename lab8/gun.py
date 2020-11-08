@@ -2,7 +2,7 @@ import random as rnd
 import math
 import pygame
 
-FPS = 20
+FPS = 60
 GRAVITY_ACCELERATION = 9.8  # Ускорение свободного падения для снаряда.
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 WHITE = (255, 255, 255)
@@ -18,13 +18,17 @@ COLORS = [BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 
 class Cannon:
-    max_power = 10
+    max_power = 3
+    min_v = 25
+    length = 100
+    height = 10
 
     def __init__(self, x, y):
         self.power = 0
+        self.on = False
         self.x = x
         self.y = y
-        self.shell_num = 5  # TODO: оставшееся на данный момент количество снарядов
+        self.shell_num = 5
         self.direction = math.pi / 4
         self.color = WHITE
 
@@ -41,29 +45,43 @@ class Cannon:
             self.direction = math.atan(y / x)
         else:
             self.direction = math.pi / 2
+        if self.on:
+            self.power += Cannon.max_power / FPS
+        if self.power > Cannon.max_power:
+            self.power = Cannon.max_power
 
-    def fire(self, dt):
+    def fire(self, ):
         """
         Создаёт объект снаряда (если ещё не потрачены все снаряды)
         летящий в направлении угла direction
         со скоростью, зависящей от длительности клика мышки
-        :param dt:  длительность клика мышки, мс
         :return: экземпляр снаряда типа Shell
         """
         if self.shell_num > 0:
             self.shell_num -= 1
+            length = Cannon.length
+            x, y = (self.x + length * math.cos(self.direction), self.y - length * math.sin(self.direction))
+            vx = Cannon.min_v * (self.power + 1) * math.cos(self.direction)
+            vy = Cannon.min_v * (self.power + 1) * math.sin(self.direction)
+            projectile = Shell(x, y, vx, -vy)
+            return projectile
 
     def draw(self):
         """
         Draws a cannon and increases power if cannon is on
         :return:
         """
-        color = (255, (10-self.power)*255/10, (10-self.power)*255/10)
-        pos1 = (self.x - 10*math.sin(self.direction), self.y - 10*math.cos(self.direction))
-        pos2 = (self.x - 10*math.sin(self.direction) + 100*math.cos(self.direction), self.y - 10*math.cos(self.direction) - 100*math.sin(self.direction))
-        pos3 = (self.x + 10*math.sin(self.direction) + 100*math.cos(self.direction), self.y + 10*math.cos(self.direction) - 100*math.sin(self.direction))
-        pos4 = (self.x + 10*math.sin(self.direction), self.y + 10*math.cos(self.direction))
+        color = (255, (Cannon.max_power - self.power) * 255 / Cannon.max_power, (Cannon.max_power - self.power) * 255 / Cannon.max_power)
+        half = Cannon.height / 2
+        length = Cannon.length
+        pos1 = (self.x - half * math.sin(self.direction), self.y - half * math.cos(self.direction))
+        pos2 = (self.x - half * math.sin(self.direction) + length * math.cos(self.direction),
+                self.y - half * math.cos(self.direction) - length * math.sin(self.direction))
+        pos3 = (self.x + half * math.sin(self.direction) + length * math.cos(self.direction),
+                self.y + half * math.cos(self.direction) - length * math.sin(self.direction))
+        pos4 = (self.x + half * math.sin(self.direction), self.y + 10 * math.cos(self.direction))
         pygame.draw.polygon(screen, color, [pos1, pos2, pos3, pos4])
+
 
 class Shell:
     standard_radius = 25
@@ -82,16 +100,17 @@ class Shell:
         :param dt:
         :return:
         """
+        dt = 15 / FPS
         ax, ay = 0, GRAVITY_ACCELERATION
         self.x += self.vx * dt + ax * (dt ** 2) / 2
         self.y += self.vy * dt + ay * (dt ** 2) / 2
-        self.vx -= ax * dt
-        self.vy -= ay * dt
+        self.vx += ax * dt
+        self.vy += ay * dt
         if not (self.x in (0 + self.r, SCREEN_WIDTH - self.r) and self.y in (0 + self.r, SCREEN_HEIGHT - self.r)):
             self.deleted = True
 
     def draw(self):
-        pygame.draw.circle(screen, self.color, (int(round(self.x)), int(round(self.y))), self.r)
+        pygame.draw.circle(screen, RED, (int(round(self.x)), int(round(self.y))), self.r)
 
     def detect_collision(self, other):
         """
@@ -177,26 +196,35 @@ def game_main_loop():
     targets = generate_random_targets(10)
     cannon = Cannon(0, 500)
     clock = pygame.time.Clock()
+    projectiles = []
     finished = False
 
     while not finished:
-        dt = clock.tick(FPS) / 1000
+        clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finished = True
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                print('Click!')
-
+                cannon.on = True
+            elif event.type == pygame.MOUSEBUTTONUP:
+                cannon.on = False
+                if cannon.shell_num > 0:
+                    projectiles.append(cannon.fire())
+                cannon.power = 0
         pygame.display.update()
         screen.fill(BLACK)
         cannon.aim(pygame.mouse.get_pos())
         cannon.draw()
         for target in targets:
-            target.move(dt)
+            target.move(1 / FPS)
 
         for target in targets:
             target.draw()
 
+        for projectile in projectiles:
+            projectile.move(1 / FPS)
+        for projectile in projectiles:
+            projectile.draw()
     pygame.quit()
 
 
