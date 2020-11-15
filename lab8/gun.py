@@ -23,7 +23,7 @@ class Cannon:
     min_v = 5 * SCALE
     length = 100
     height = 10
-    cannon_v = 20
+    cannon_v = 5*SCALE
 
     def __init__(self, x, y):
         self.power = 0
@@ -45,9 +45,13 @@ class Cannon:
         x = pos[0] - self.x
         y = self.y - pos[1]
         if x != 0:
-            self.direction = math.atan(y / x)
+            direction = math.atan(y / x)
         else:
-            self.direction = math.pi / 2
+            direction = math.pi / 2
+        if x >= 0:
+            self.direction = direction
+        else:
+            self.direction = direction + math.pi
         if self.on:
             self.power += Cannon.max_power / FPS
         if self.power > Cannon.max_power:
@@ -86,9 +90,9 @@ class Cannon:
         pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
 
     def move(self, dt=1/FPS):
-        if self.moving_dest == "LEFT" and self.x > 50:
+        if self.moving_dest == "LEFT" and self.x > 10:
             self.x -= Cannon.cannon_v*dt
-        elif self.moving_dest == "RIGHT" and self.x < SCREEN_HEIGHT - 50:
+        elif self.moving_dest == "RIGHT" and self.x < SCREEN_HEIGHT - 10:
             self.x += Cannon.cannon_v*dt
 
 
