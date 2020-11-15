@@ -5,7 +5,7 @@ import pygame
 FPS = 60
 GRAVITY_ACCELERATION = 9.8  # Ускорение свободного падения для снаряда.
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
-SCALE = SCREEN_WIDTH/20
+SCALE = SCREEN_WIDTH / 20
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -20,7 +20,7 @@ COLORS = [BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 class Cannon:
     max_power = 3
-    min_v = 5*SCALE
+    min_v = 5 * SCALE
     length = 100
     height = 10
 
@@ -72,7 +72,7 @@ class Cannon:
         Draws a cannon
         :return:
         """
-        self.color = (self.power*255/Cannon.max_power, 0, 0)
+        self.color = (self.power * 255 / Cannon.max_power, 0, 0)
         half = Cannon.height / 2
         length = Cannon.length
         pos1 = (self.x - half * math.sin(self.direction), self.y - half * math.cos(self.direction))
@@ -94,7 +94,7 @@ class Shell:
         self.color = color
         self.is_alive = True
 
-    def move(self, dt=1/FPS):
+    def move(self, dt=1 / FPS):
         """
         Сдвигает снаряд исходя из его кинематических характеристик
         и длины кванта времени dt
@@ -102,14 +102,13 @@ class Shell:
         :param dt:
         :return:
         """
-        ax, ay = 0, GRAVITY_ACCELERATION*SCALE
+        ax, ay = 0, GRAVITY_ACCELERATION * SCALE
         self.x += self.vx * dt + ax * (dt ** 2) / 2
         self.y += self.vy * dt + ay * (dt ** 2) / 2
         self.vx += ax * dt
         self.vy += ay * dt
         if not ((0 + self.r < self.x < SCREEN_WIDTH - self.r) and (0 + self.r < self.y < SCREEN_HEIGHT - self.r)):
             self.is_alive = False
-
 
     def draw(self):
         pygame.draw.circle(screen, self.color, (int(round(self.x)), int(round(self.y))), self.r)
@@ -217,6 +216,10 @@ def game_main_loop():
                 cannon.power = 0
         pygame.display.update()
         screen.fill(WHITE)
+        # draw ground
+        pygame.draw.polygon(screen, GRAY, (
+        (0, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT),
+        (0, SCREEN_HEIGHT)))
         cannon.aim(pygame.mouse.get_pos())
         cannon.draw()
         for target in targets:
