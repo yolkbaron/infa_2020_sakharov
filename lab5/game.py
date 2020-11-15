@@ -25,8 +25,8 @@ MAX_RADIUS = 70
 MIN_RADIUS = 20
 MAX_TIME = 3
 MIN_TIME = 2
-IVANOV = pygame.image.load(os.path.join('ivanov.png'))
-PKOZHEVN = pygame.image.load(os.path.join('pkozhevn.png'))
+IVANOV = pygame.image.load('ivanov.png')
+PKOZHEVN = pygame.image.load('pkozhevn.png')
 IVANOV.set_colorkey(WHITE)
 PKOZHEVN.set_colorkey(WHITE)
 IVANOV = pygame.transform.rotozoom(IVANOV, 0, 0.5)
