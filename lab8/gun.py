@@ -5,6 +5,7 @@ import pygame
 FPS = 60
 GRAVITY_ACCELERATION = 9.8  # Ускорение свободного падения для снаряда.
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+SCALE = SCREEN_WIDTH/20
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -19,7 +20,7 @@ COLORS = [BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 class Cannon:
     max_power = 3
-    min_v = 25
+    min_v = 5*SCALE
     length = 100
     height = 10
 
@@ -50,11 +51,11 @@ class Cannon:
         if self.power > Cannon.max_power:
             self.power = Cannon.max_power
 
-    def fire(self, ):
+    def fire(self):
         """
-        Создаёт объект снаряда (если ещё не потрачены все снаряды)
-        летящий в направлении угла direction
-        со скоростью, зависящей от длительности клика мышки
+        Creates Shell object (if there are still shells left)
+        flying to angle from self.direction
+        with speed that depends from self.power
         :return: экземпляр снаряда типа Shell
         """
         if self.shell_num > 0:
@@ -68,10 +69,11 @@ class Cannon:
 
     def draw(self):
         """
-        Draws a cannon and increases power if cannon is on
+        Draws a cannon
         :return:
         """
-        color = (255, (Cannon.max_power - self.power) * 255 / Cannon.max_power, (Cannon.max_power - self.power) * 255 / Cannon.max_power)
+        color = (255, (Cannon.max_power - self.power) * 255 / Cannon.max_power,
+                 (Cannon.max_power - self.power) * 255 / Cannon.max_power)
         half = Cannon.height / 2
         length = Cannon.length
         pos1 = (self.x - half * math.sin(self.direction), self.y - half * math.cos(self.direction))
@@ -92,7 +94,7 @@ class Shell:
         self.r = Shell.standard_radius
         self.deleted = False
 
-    def move(self, dt):
+    def move(self, dt=1/FPS):
         """
         Сдвигает снаряд исходя из его кинематических характеристик
         и длины кванта времени dt
@@ -100,8 +102,7 @@ class Shell:
         :param dt:
         :return:
         """
-        dt = 15 / FPS
-        ax, ay = 0, GRAVITY_ACCELERATION
+        ax, ay = 0, GRAVITY_ACCELERATION*SCALE
         self.x += self.vx * dt + ax * (dt ** 2) / 2
         self.y += self.vy * dt + ay * (dt ** 2) / 2
         self.vx += ax * dt
@@ -130,6 +131,7 @@ class Target:
         self.vx, self.vy = vx, vy
         self.r = Target.standard_radius
         self.color = COLORS[rnd.randint(0, len(COLORS) - 1)]
+        self.is_alive = True
 
     def move(self, dt):
         """
@@ -171,7 +173,8 @@ class Target:
         :param other:
         :return:
         """
-        pass  # TODO
+        if other.detect_collision(self):
+            self.is_alive = False
 
 
 class Bomb:
@@ -217,12 +220,15 @@ def game_main_loop():
         cannon.draw()
         for target in targets:
             target.move(1 / FPS)
-
-        for target in targets:
-            target.draw()
-
         for projectile in projectiles:
             projectile.move(1 / FPS)
+            for target in targets:
+                target.collide(projectile)
+        for target in targets:
+            target.draw()
+            if not target.is_alive:
+                print('Dead')
+                targets.remove(target)
         for projectile in projectiles:
             projectile.draw()
     pygame.quit()
