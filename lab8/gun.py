@@ -202,6 +202,10 @@ class Target:
         if other.detect_collision(self):
             self.is_alive = False
 
+class Common_target(Target):
+    def __init__(self, parent):
+        super().__init__(RED)
+        self.parent = parent
 
 class Bomb:
     pass
@@ -219,6 +223,32 @@ def generate_random_targets(number: int):
         target = Target(x, y, vx, vy)
         targets.append(target)
     return targets
+
+
+def movement(cannon, event):
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+            if cannon.moving_dest == "NONE":
+                cannon.moving_dest = "RIGHT"
+            else:
+                cannon.moving_dest = "NONE"
+        elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
+            if cannon.moving_dest == "NONE":
+                cannon.moving_dest = "LEFT"
+            else:
+                cannon.moving_dest = "NONE"
+
+    elif event.type == pygame.KEYUP:
+        if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+            if cannon.moving_dest == "RIGHT":
+                cannon.moving_dest = "NONE"
+            else:
+                cannon.moving_dest = "LEFT"
+        if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+            if cannon.moving_dest == "LEFT":
+                cannon.moving_dest = "NONE"
+            else:
+                cannon.moving_dest = "RIGHT"
 
 
 def game_main_loop():
@@ -240,28 +270,8 @@ def game_main_loop():
                 if cannon.shell_num > 0:
                     projectiles.append(cannon.fire())
                 cannon.power = 0
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    if cannon.moving_dest == "NONE":
-                        cannon.moving_dest = "RIGHT"
-                    else:
-                        cannon.moving_dest = "NONE"
-                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    if cannon.moving_dest == "NONE":
-                        cannon.moving_dest = "LEFT"
-                    else:
-                        cannon.moving_dest = "NONE"
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    if cannon.moving_dest == "RIGHT":
-                        cannon.moving_dest = "NONE"
-                    else:
-                        cannon.moving_dest = "LEFT"
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    if cannon.moving_dest == "LEFT":
-                        cannon.moving_dest = "NONE"
-                    else:
-                        cannon.moving_dest = "RIGHT"
+            if event.type == pygame.KEYUP or event.type == pygame.KEYDOWN:
+                movement(cannon, event)
 
         pygame.display.update()
         screen.fill(WHITE)
