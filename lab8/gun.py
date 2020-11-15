@@ -31,7 +31,7 @@ class Cannon:
         self.y = y
         self.shell_num = 5
         self.direction = math.pi / 4
-        self.color = WHITE
+        self.color = BLACK
 
     def aim(self, pos):
         """
@@ -64,7 +64,7 @@ class Cannon:
             x, y = (self.x + length * math.cos(self.direction), self.y - length * math.sin(self.direction))
             vx = Cannon.min_v * (self.power + 1) * math.cos(self.direction)
             vy = Cannon.min_v * (self.power + 1) * math.sin(self.direction)
-            projectile = Shell(x, y, vx, -vy)
+            projectile = Shell(x, y, vx, -vy, self.color)
             return projectile
 
     def draw(self):
@@ -72,8 +72,7 @@ class Cannon:
         Draws a cannon
         :return:
         """
-        color = (255, (Cannon.max_power - self.power) * 255 / Cannon.max_power,
-                 (Cannon.max_power - self.power) * 255 / Cannon.max_power)
+        self.color = (self.power*255/Cannon.max_power, 0, 0)
         half = Cannon.height / 2
         length = Cannon.length
         pos1 = (self.x - half * math.sin(self.direction), self.y - half * math.cos(self.direction))
@@ -82,17 +81,18 @@ class Cannon:
         pos3 = (self.x + half * math.sin(self.direction) + length * math.cos(self.direction),
                 self.y + half * math.cos(self.direction) - length * math.sin(self.direction))
         pos4 = (self.x + half * math.sin(self.direction), self.y + 10 * math.cos(self.direction))
-        pygame.draw.polygon(screen, color, [pos1, pos2, pos3, pos4])
+        pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
 
 
 class Shell:
-    standard_radius = 25
+    standard_radius = 10
 
-    def __init__(self, x, y, vx, vy):
+    def __init__(self, x, y, vx, vy, color):
         self.x, self.y = x, y
         self.vx, self.vy = vx, vy
         self.r = Shell.standard_radius
-        self.deleted = False
+        self.color = color
+        self.is_alive = True
 
     def move(self, dt=1/FPS):
         """
@@ -107,11 +107,12 @@ class Shell:
         self.y += self.vy * dt + ay * (dt ** 2) / 2
         self.vx += ax * dt
         self.vy += ay * dt
-        if not (self.x in (0 + self.r, SCREEN_WIDTH - self.r) and self.y in (0 + self.r, SCREEN_HEIGHT - self.r)):
-            self.deleted = True
+        if not ((0 + self.r < self.x < SCREEN_WIDTH - self.r) and (0 + self.r < self.y < SCREEN_HEIGHT - self.r)):
+            self.is_alive = False
+
 
     def draw(self):
-        pygame.draw.circle(screen, RED, (int(round(self.x)), int(round(self.y))), self.r)
+        pygame.draw.circle(screen, self.color, (int(round(self.x)), int(round(self.y))), self.r)
 
     def detect_collision(self, other):
         """
@@ -215,7 +216,7 @@ def game_main_loop():
                     projectiles.append(cannon.fire())
                 cannon.power = 0
         pygame.display.update()
-        screen.fill(BLACK)
+        screen.fill(WHITE)
         cannon.aim(pygame.mouse.get_pos())
         cannon.draw()
         for target in targets:
@@ -227,10 +228,11 @@ def game_main_loop():
         for target in targets:
             target.draw()
             if not target.is_alive:
-                print('Dead')
                 targets.remove(target)
         for projectile in projectiles:
             projectile.draw()
+            if not projectile.is_alive:
+                projectiles.remove(projectile)
     pygame.quit()
 
 
