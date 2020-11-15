@@ -171,8 +171,8 @@ class Target:
         if self.x <= 0 + self.r:
             self.x = 0 + self.r
             self.vx = -self.vx
-        if self.y >= SCREEN_HEIGHT - self.r:
-            self.y = SCREEN_HEIGHT - self.r
+        if self.y >= SCREEN_HEIGHT*4/5 - self.r:
+            self.y = SCREEN_HEIGHT*4/5 - self.r
             self.vy = -self.vy
         if self.y <= 0 + self.r:
             self.y = 0 + self.r
