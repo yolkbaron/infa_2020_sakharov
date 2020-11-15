@@ -23,14 +23,14 @@ class Cannon:
     min_v = 5 * SCALE
     length = 100
     height = 10
-    cannon_v = 5*SCALE
+    cannon_v = 5 * SCALE
 
     def __init__(self, x, y):
         self.power = 0
         self.on = False
         self.x = x
         self.y = y
-        self.shell_num = 5
+        self.shell_num = 100
         self.direction = math.pi / 4
         self.color = BLACK
         self.moving_dest = "NONE"
@@ -89,11 +89,11 @@ class Cannon:
         pos4 = (self.x + half * math.sin(self.direction), self.y + 10 * math.cos(self.direction))
         pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
 
-    def move(self, dt=1/FPS):
+    def move(self, dt=1 / FPS):
         if self.moving_dest == "LEFT" and self.x > 10:
-            self.x -= Cannon.cannon_v*dt
+            self.x -= Cannon.cannon_v * dt
         elif self.moving_dest == "RIGHT" and self.x < SCREEN_HEIGHT - 10:
-            self.x += Cannon.cannon_v*dt
+            self.x += Cannon.cannon_v * dt
 
 
 class Shell:
@@ -119,11 +119,18 @@ class Shell:
         self.y += self.vy * dt + ay * (dt ** 2) / 2
         self.vx += ax * dt
         self.vy += ay * dt
-        if not ((0 + self.r < self.x < SCREEN_WIDTH - self.r) and (0 + self.r < self.y < SCREEN_HEIGHT - self.r)):
+        if self.y >= SCREEN_HEIGHT * 4 / 5 - self.r:
+            self.y = SCREEN_HEIGHT * 4 / 5 - self.r
+            if self.vx >= 0:
+                self.vx = max(0, self.vx - 0.2*self.vy)
+            else:
+                self.vx = min(0, self.vx + 0.2*self.vy)
+            self.vy = -self.vy/2
+        if (not(0 - self.r < self.x < SCREEN_WIDTH + self.r)) or (self.vx == 0 and abs(self.vy) <= 1):
             self.is_alive = False
 
     def draw(self):
-        pygame.draw.circle(screen, self.color, (int(round(self.x)), int(round(self.y))), self.r)
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
     def detect_collision(self, other):
         """
@@ -253,8 +260,8 @@ def game_main_loop():
         screen.fill(WHITE)
         # draw ground
         pygame.draw.polygon(screen, GRAY, (
-        (0, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT),
-        (0, SCREEN_HEIGHT)))
+            (0, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT),
+            (0, SCREEN_HEIGHT)), 0)
         cannon.move()
         cannon.aim(pygame.mouse.get_pos())
         cannon.draw()
