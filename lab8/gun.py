@@ -21,8 +21,9 @@ COLORS = [BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 class Cannon:
     max_power = 3
     min_v = 5 * SCALE
-    length = 100
-    height = 10
+    length = 50
+    thickness = 20
+    height = 50
     cannon_v = 5 * SCALE
 
     def __init__(self, x, y):
@@ -43,7 +44,7 @@ class Cannon:
         :return: None
         """
         x = pos[0] - self.x
-        y = self.y - pos[1]
+        y = self.y - pos[1] - Cannon.height
         if x != 0:
             direction = math.atan(y / x)
         else:
@@ -67,7 +68,7 @@ class Cannon:
         if self.shell_num > 0:
             self.shell_num -= 1
             length = Cannon.length
-            x, y = (self.x + length * math.cos(self.direction), self.y - length * math.sin(self.direction))
+            x, y = (self.x + length * math.cos(self.direction), self.y - length * math.sin(self.direction) - Cannon.height/2)
             vx = Cannon.min_v * (self.power + 1) * math.cos(self.direction)
             vy = Cannon.min_v * (self.power + 1) * math.sin(self.direction)
             projectile = Shell(x, y, vx, -vy, self.color)
@@ -79,20 +80,26 @@ class Cannon:
         :return:
         """
         self.color = (self.power * 255 / Cannon.max_power, 0, 0)
-        half = Cannon.height / 2
+        half = Cannon.thickness / 2
         length = Cannon.length
-        pos1 = (self.x - half * math.sin(self.direction), self.y - half * math.cos(self.direction))
-        pos2 = (self.x - half * math.sin(self.direction) + length * math.cos(self.direction),
-                self.y - half * math.cos(self.direction) - length * math.sin(self.direction))
-        pos3 = (self.x + half * math.sin(self.direction) + length * math.cos(self.direction),
-                self.y + half * math.cos(self.direction) - length * math.sin(self.direction))
-        pos4 = (self.x + half * math.sin(self.direction), self.y + 10 * math.cos(self.direction))
+        cos = math.cos(self.direction)
+        sin = math.sin(self.direction)
+        pos1 = (self.x - half * sin, self.y - half * cos - Cannon.height/2)
+        pos2 = (self.x - half * sin + length * cos, self.y - half * cos - length * sin - Cannon.height/2)
+        pos3 = (self.x + half * sin + length * cos, self.y + half * cos - length * sin - Cannon.height/2)
+        pos4 = (self.x + half * sin, self.y + half * cos - Cannon.height/2)
+        pos5 = (self.x - Cannon.height/2, self.y)
+        pos6 = (self.x - Cannon.height/2, self.y - Cannon.height)
+        pos7 = (self.x + Cannon.height/2, self.y - Cannon.height)
+        pos8 = (self.x + Cannon.height/2, self.y)
         pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
+        pygame.draw.polygon(screen, BLACK, [pos5, pos6, pos7, pos8])
+
 
     def move(self, dt=1 / FPS):
-        if self.moving_dest == "LEFT" and self.x > 10:
+        if self.moving_dest == "LEFT" and self.x > Cannon.height/2:
             self.x -= Cannon.cannon_v * dt
-        elif self.moving_dest == "RIGHT" and self.x < SCREEN_HEIGHT - 10:
+        elif self.moving_dest == "RIGHT" and self.x < SCREEN_WIDTH - Cannon.height/2:
             self.x += Cannon.cannon_v * dt
 
 
@@ -216,7 +223,7 @@ def generate_random_targets(number: int):
 
 def game_main_loop():
     targets = generate_random_targets(10)
-    cannon = Cannon(0, 500)
+    cannon = Cannon(SCREEN_WIDTH/2, SCREEN_HEIGHT*4/5)
     clock = pygame.time.Clock()
     projectiles = []
     finished = False
