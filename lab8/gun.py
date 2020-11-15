@@ -15,7 +15,7 @@ MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
-COLORS = [BLUE, YELLOW, GREEN, MAGENTA]
+COLORS = [BLUE, CYAN, GREEN, MAGENTA]
 
 
 class Cannon:
@@ -31,7 +31,7 @@ class Cannon:
         self.on = False
         self.x = x
         self.y = y
-        self.shell_num = 100
+        self.shell_num = 10
         self.direction = math.pi / 4
         self.color = BLACK
         self.moving_dest = "NONE"
@@ -44,20 +44,21 @@ class Cannon:
         :param pos: tuple (x, y) of mouse coords
         :return: None
         """
-        x = pos[0] - self.x
-        y = self.y - pos[1] - Cannon.height
-        if x != 0:
-            direction = math.atan(y / x)
-        else:
-            direction = math.pi / 2
-        if x >= 0:
-            self.direction = max(0, direction)
-        else:
-            self.direction = min(math.pi, direction + math.pi)
-        if self.on:
-            self.power += Cannon.max_power / FPS
-        if self.power > Cannon.max_power:
-            self.power = Cannon.max_power
+        if self.is_alive:
+            x = pos[0] - self.x
+            y = self.y - pos[1] - Cannon.height
+            if x != 0:
+                direction = math.atan(y / x)
+            else:
+                direction = math.pi / 2
+            if x >= 0:
+                self.direction = max(0, direction)
+            else:
+                self.direction = min(math.pi, direction + math.pi)
+            if self.on:
+                self.power += Cannon.max_power / FPS
+            if self.power > Cannon.max_power:
+                self.power = Cannon.max_power
 
     def fire(self):
         """
@@ -66,37 +67,39 @@ class Cannon:
         with speed that depends from self.power
         :return: экземпляр снаряда типа Shell
         """
-        if self.shell_num > 0:
-            self.shell_num -= 1
-            length = Cannon.length
-            x, y = (
-                self.x + length * math.cos(self.direction),
-                self.y - length * math.sin(self.direction) - Cannon.height / 2)
-            vx = Cannon.min_v * (self.power + 1) * math.cos(self.direction)
-            vy = Cannon.min_v * (self.power + 1) * math.sin(self.direction)
-            projectile = Shell(x, y, vx, -vy, self.color)
-            return projectile
+        if self.is_alive:
+            if self.shell_num > 0:
+                self.shell_num -= 1
+                length = Cannon.length
+                x, y = (
+                    self.x + length * math.cos(self.direction),
+                    self.y - length * math.sin(self.direction) - Cannon.height / 2)
+                vx = Cannon.min_v * (self.power + 1) * math.cos(self.direction)
+                vy = Cannon.min_v * (self.power + 1) * math.sin(self.direction)
+                projectile = Shell(x, y, vx, -vy, self.color)
+                return projectile
 
     def draw(self):
         """
         Draws a cannon
         :return:
         """
-        self.color = (self.power * 255 / Cannon.max_power, 0, 0)
-        half = Cannon.thickness / 2
-        length = Cannon.length
-        cos = math.cos(self.direction)
-        sin = math.sin(self.direction)
-        pos1 = (self.x - half * sin, self.y - half * cos - Cannon.height / 2)
-        pos2 = (self.x - half * sin + length * cos, self.y - half * cos - length * sin - Cannon.height / 2)
-        pos3 = (self.x + half * sin + length * cos, self.y + half * cos - length * sin - Cannon.height / 2)
-        pos4 = (self.x + half * sin, self.y + half * cos - Cannon.height / 2)
-        pos5 = (self.x - Cannon.height / 2, self.y)
-        pos6 = (self.x - Cannon.height / 2, self.y - Cannon.height)
-        pos7 = (self.x + Cannon.height / 2, self.y - Cannon.height)
-        pos8 = (self.x + Cannon.height / 2, self.y)
-        pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
-        pygame.draw.polygon(screen, BLACK, [pos5, pos6, pos7, pos8])
+        if self.is_alive:
+            self.color = (self.power * 255 / Cannon.max_power, 0, 0)
+            half = Cannon.thickness / 2
+            length = Cannon.length
+            cos = math.cos(self.direction)
+            sin = math.sin(self.direction)
+            pos1 = (self.x - half * sin, self.y - half * cos - Cannon.height / 2)
+            pos2 = (self.x - half * sin + length * cos, self.y - half * cos - length * sin - Cannon.height / 2)
+            pos3 = (self.x + half * sin + length * cos, self.y + half * cos - length * sin - Cannon.height / 2)
+            pos4 = (self.x + half * sin, self.y + half * cos - Cannon.height / 2)
+            pos5 = (self.x - Cannon.height / 2, self.y)
+            pos6 = (self.x - Cannon.height / 2, self.y - Cannon.height)
+            pos7 = (self.x + Cannon.height / 2, self.y - Cannon.height)
+            pos8 = (self.x + Cannon.height / 2, self.y)
+            pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
+            pygame.draw.polygon(screen, BLACK, [pos5, pos6, pos7, pos8])
 
     def move(self, dt=1 / FPS):
         if self.moving_dest == "LEFT" and self.x > Cannon.height / 2:
@@ -217,12 +220,12 @@ class CommonTarget(Target):
 
 
 class Cloud(Target):
-    max_cooldown = 10
+    max_cooldown = 1
 
     def __init__(self, x, y, vx):
-        super().__init__(x, y, vx, 0, color=CYAN)
+        super().__init__(x, y, vx, 0, color=YELLOW)
         self.r = Target.standard_radius * 2
-        self.cooldown = rnd.randint(0, Cloud.max_cooldown)
+        self.cooldown = rnd.uniform(0, 3*Cloud.max_cooldown)
 
     def draw(self):
         """
@@ -255,7 +258,7 @@ class Bomb:
             self.is_alive = False
 
     def draw(self):
-        pygame.draw.circle(screen, CYAN, (self.x, self.y), self.r)
+        pygame.draw.circle(screen, YELLOW, (self.x, self.y), self.r)
 
 
 def generate_random_common_targets(number: int):
@@ -311,7 +314,7 @@ def movement(cannon, event):
 
 def game_main_loop():
     common_targets = generate_random_common_targets(10)
-    clouds = generate_random_clouds(4)
+    clouds = generate_random_clouds(5)
     cannon = Cannon(SCREEN_WIDTH / 2, SCREEN_HEIGHT * 4 / 5)
     clock = pygame.time.Clock()
     projectiles = []
@@ -327,7 +330,7 @@ def game_main_loop():
                 cannon.on = True
             elif event.type == pygame.MOUSEBUTTONUP:
                 cannon.on = False
-                if cannon.shell_num > 0:
+                if cannon.shell_num > 0 and cannon.is_alive:
                     projectiles.append(cannon.fire())
                 cannon.power = 0
             if event.type == pygame.KEYUP or event.type == pygame.KEYDOWN:
@@ -339,10 +342,9 @@ def game_main_loop():
         pygame.draw.polygon(screen, GRAY, (
             (0, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT),
             (0, SCREEN_HEIGHT)), 0)
-        if cannon.is_alive:
-            cannon.move()
-            cannon.aim(pygame.mouse.get_pos())
-            cannon.draw()
+        cannon.move()
+        cannon.aim(pygame.mouse.get_pos())
+        cannon.draw()
         for common_target in common_targets:
             common_target.move(1 / FPS)
         for cloud in clouds:
