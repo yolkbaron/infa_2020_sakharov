@@ -35,6 +35,7 @@ class Cannon:
         self.direction = math.pi / 4
         self.color = BLACK
         self.moving_dest = "NONE"
+        self.is_alive = True
 
     def aim(self, pos):
         """
@@ -159,7 +160,7 @@ class Target:
         self.x, self.y = x, y
         self.vx, self.vy = vx, vy
         self.r = Target.standard_radius
-        if color == None:
+        if color is None:
             self.color = COLORS[rnd.randint(0, len(COLORS) - 1)]
         else:
             self.color = color
@@ -237,7 +238,7 @@ class Cloud(Target):
         return bomb
 
 
-class Bomb():
+class Bomb:
     standart_r = 15
 
     def __init__(self, x, y):
@@ -338,9 +339,10 @@ def game_main_loop():
         pygame.draw.polygon(screen, GRAY, (
             (0, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT),
             (0, SCREEN_HEIGHT)), 0)
-        cannon.move()
-        cannon.aim(pygame.mouse.get_pos())
-        cannon.draw()
+        if cannon.is_alive:
+            cannon.move()
+            cannon.aim(pygame.mouse.get_pos())
+            cannon.draw()
         for common_target in common_targets:
             common_target.move(1 / FPS)
         for cloud in clouds:
@@ -350,7 +352,9 @@ def game_main_loop():
                 bombs.append(cloud.fire())
         for bomb in bombs:
             bomb.move(1 / FPS)
-
+            if (cannon.x - Cannon.height / 2 - bomb.r < bomb.x < cannon.x + Cannon.height / 2 + bomb.r) and (
+                    cannon.y - bomb.r < bomb.y < cannon.y + Cannon.height + bomb.r):
+                cannon.is_alive = False
         for projectile in projectiles:
             projectile.move(1 / FPS)
             for common_target in common_targets:
