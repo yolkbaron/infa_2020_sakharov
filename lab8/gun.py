@@ -216,9 +216,12 @@ class CommonTarget(Target):
 
 
 class Cloud(Target):
+    max_cooldown = 10
+
     def __init__(self, x, y, vx):
         super().__init__(x, y, vx, 0, color=CYAN)
-        self.r = Target.standard_radius*2
+        self.r = Target.standard_radius * 2
+        self.cooldown = rnd.randint(0, Cloud.max_cooldown)
 
     def draw(self):
         """
@@ -229,12 +232,13 @@ class Cloud(Target):
                            (int(round(self.x)), int(round(self.y))), self.r)
 
     def fire(self):
+        self.cooldown = Cloud.max_cooldown
         bomb = Bomb(self.x, self.y)
         return bomb
 
 
 class Bomb():
-    standart_r = 25
+    standart_r = 15
 
     def __init__(self, x, y):
         self.x = x
@@ -244,16 +248,20 @@ class Bomb():
         self.is_alive = True
 
     def move(self, dt=1 / FPS):
+        self.v += GRAVITY_ACCELERATION * SCALE * dt
         self.y += self.v * dt
-        if self.y >= SCREEN_HEIGHT * 4 / 5 - self.r:
+        if self.y >= SCREEN_HEIGHT:
             self.is_alive = False
+
+    def draw(self):
+        pygame.draw.circle(screen, CYAN, (self.x, self.y), self.r)
 
 
 def generate_random_common_targets(number: int):
     common_targets = []
     for i in range(number):
         x = rnd.randint(0, SCREEN_WIDTH)
-        y = rnd.randint(0, SCREEN_HEIGHT*4/5)
+        y = rnd.randint(0, SCREEN_HEIGHT * 4 / 5)
         v = rnd.randint(30, 60)
         angle = rnd.randint(0, 360)
         vx = v * math.cos(angle / (2 * math.pi))
@@ -262,15 +270,17 @@ def generate_random_common_targets(number: int):
         common_targets.append(target)
     return common_targets
 
+
 def generate_random_clouds(number: int):
     clouds = []
     for i in range(number):
-        x = rnd.randint(0, SCREEN_WIDTH)
-        y = rnd.randint(0, SCREEN_HEIGHT*2/5)
-        v = rnd.randint(30, 60)
+        x = SCREEN_WIDTH / (i + 1)
+        y = rnd.randint(0, SCREEN_HEIGHT * 2 / 5)
+        v = rnd.randint(20, 80)
         cloud = Cloud(x, y, v)
         clouds.append(cloud)
     return clouds
+
 
 def movement(cannon, event):
     if event.type == pygame.KEYDOWN:
@@ -334,7 +344,13 @@ def game_main_loop():
         for common_target in common_targets:
             common_target.move(1 / FPS)
         for cloud in clouds:
-            cloud.move(1/FPS)
+            cloud.move(1 / FPS)
+            cloud.cooldown = max(0, cloud.cooldown - 1 / FPS)
+            if cloud.cooldown == 0:
+                bombs.append(cloud.fire())
+        for bomb in bombs:
+            bomb.move(1 / FPS)
+
         for projectile in projectiles:
             projectile.move(1 / FPS)
             for common_target in common_targets:
@@ -346,6 +362,9 @@ def game_main_loop():
         for cloud in clouds:
             if not cloud.is_alive:
                 clouds.remove(cloud)
+        for bomb in bombs:
+            if not bomb.is_alive:
+                bombs.remove(bomb)
         for projectile in projectiles:
             if not projectile.is_alive:
                 projectiles.remove(projectile)
@@ -354,6 +373,8 @@ def game_main_loop():
             common_target.draw()
         for cloud in clouds:
             cloud.draw()
+        for bomb in bombs:
+            bomb.draw()
         for projectile in projectiles:
             projectile.draw()
 
