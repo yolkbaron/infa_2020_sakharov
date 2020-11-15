@@ -50,9 +50,9 @@ class Cannon:
         else:
             direction = math.pi / 2
         if x >= 0:
-            self.direction = direction
+            self.direction = max(0, direction)
         else:
-            self.direction = direction + math.pi
+            self.direction = min(math.pi, direction + math.pi)
         if self.on:
             self.power += Cannon.max_power / FPS
         if self.power > Cannon.max_power:
@@ -127,13 +127,15 @@ class Shell:
         self.vx += ax * dt
         self.vy += ay * dt
         if self.y >= SCREEN_HEIGHT * 4 / 5 - self.r:
+            if abs(self.vx) <= 5*SCALE and abs(self.vy) <= 5*SCALE:
+                self.is_alive = False
             self.y = SCREEN_HEIGHT * 4 / 5 - self.r
             if self.vx >= 0:
                 self.vx = max(0, self.vx - 0.2*self.vy)
             else:
                 self.vx = min(0, self.vx + 0.2*self.vy)
             self.vy = -self.vy/2
-        if (not(0 - self.r < self.x < SCREEN_WIDTH + self.r)) or (self.vx == 0 and abs(self.vy) <= 1):
+        if not(0 - self.r < self.x < SCREEN_WIDTH + self.r):
             self.is_alive = False
 
     def draw(self):
