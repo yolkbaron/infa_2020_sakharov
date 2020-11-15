@@ -15,7 +15,7 @@ MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
-COLORS = [BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+COLORS = [BLUE, YELLOW, GREEN, MAGENTA]
 
 
 class Cannon:
@@ -68,7 +68,9 @@ class Cannon:
         if self.shell_num > 0:
             self.shell_num -= 1
             length = Cannon.length
-            x, y = (self.x + length * math.cos(self.direction), self.y - length * math.sin(self.direction) - Cannon.height/2)
+            x, y = (
+                self.x + length * math.cos(self.direction),
+                self.y - length * math.sin(self.direction) - Cannon.height / 2)
             vx = Cannon.min_v * (self.power + 1) * math.cos(self.direction)
             vy = Cannon.min_v * (self.power + 1) * math.sin(self.direction)
             projectile = Shell(x, y, vx, -vy, self.color)
@@ -84,22 +86,21 @@ class Cannon:
         length = Cannon.length
         cos = math.cos(self.direction)
         sin = math.sin(self.direction)
-        pos1 = (self.x - half * sin, self.y - half * cos - Cannon.height/2)
-        pos2 = (self.x - half * sin + length * cos, self.y - half * cos - length * sin - Cannon.height/2)
-        pos3 = (self.x + half * sin + length * cos, self.y + half * cos - length * sin - Cannon.height/2)
-        pos4 = (self.x + half * sin, self.y + half * cos - Cannon.height/2)
-        pos5 = (self.x - Cannon.height/2, self.y)
-        pos6 = (self.x - Cannon.height/2, self.y - Cannon.height)
-        pos7 = (self.x + Cannon.height/2, self.y - Cannon.height)
-        pos8 = (self.x + Cannon.height/2, self.y)
+        pos1 = (self.x - half * sin, self.y - half * cos - Cannon.height / 2)
+        pos2 = (self.x - half * sin + length * cos, self.y - half * cos - length * sin - Cannon.height / 2)
+        pos3 = (self.x + half * sin + length * cos, self.y + half * cos - length * sin - Cannon.height / 2)
+        pos4 = (self.x + half * sin, self.y + half * cos - Cannon.height / 2)
+        pos5 = (self.x - Cannon.height / 2, self.y)
+        pos6 = (self.x - Cannon.height / 2, self.y - Cannon.height)
+        pos7 = (self.x + Cannon.height / 2, self.y - Cannon.height)
+        pos8 = (self.x + Cannon.height / 2, self.y)
         pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
         pygame.draw.polygon(screen, BLACK, [pos5, pos6, pos7, pos8])
 
-
     def move(self, dt=1 / FPS):
-        if self.moving_dest == "LEFT" and self.x > Cannon.height/2:
+        if self.moving_dest == "LEFT" and self.x > Cannon.height / 2:
             self.x -= Cannon.cannon_v * dt
-        elif self.moving_dest == "RIGHT" and self.x < SCREEN_WIDTH - Cannon.height/2:
+        elif self.moving_dest == "RIGHT" and self.x < SCREEN_WIDTH - Cannon.height / 2:
             self.x += Cannon.cannon_v * dt
 
 
@@ -127,15 +128,15 @@ class Shell:
         self.vx += ax * dt
         self.vy += ay * dt
         if self.y >= SCREEN_HEIGHT * 4 / 5 - self.r:
-            if abs(self.vx) <= 5*SCALE and abs(self.vy) <= 5*SCALE:
+            if abs(self.vx) <= 5 * SCALE and abs(self.vy) <= 5 * SCALE:
                 self.is_alive = False
             self.y = SCREEN_HEIGHT * 4 / 5 - self.r
             if self.vx >= 0:
-                self.vx = max(0, self.vx - 0.2*self.vy)
+                self.vx = max(0, self.vx - 0.2 * self.vy)
             else:
-                self.vx = min(0, self.vx + 0.2*self.vy)
-            self.vy = -self.vy/2
-        if not(0 - self.r < self.x < SCREEN_WIDTH + self.r):
+                self.vx = min(0, self.vx + 0.2 * self.vy)
+            self.vy = -self.vy / 2
+        if not (0 - self.r < self.x < SCREEN_WIDTH + self.r):
             self.is_alive = False
 
     def draw(self):
@@ -154,11 +155,14 @@ class Shell:
 class Target:
     standard_radius = 15
 
-    def __init__(self, x, y, vx, vy):
+    def __init__(self, x, y, vx, vy, color=None):
         self.x, self.y = x, y
         self.vx, self.vy = vx, vy
         self.r = Target.standard_radius
-        self.color = COLORS[rnd.randint(0, len(COLORS) - 1)]
+        if color == None:
+            self.color = COLORS[rnd.randint(0, len(COLORS) - 1)]
+        else:
+            self.color = color
         self.is_alive = True
 
     def move(self, dt):
@@ -180,20 +184,12 @@ class Target:
         if self.x <= 0 + self.r:
             self.x = 0 + self.r
             self.vx = -self.vx
-        if self.y >= SCREEN_HEIGHT*4/5 - self.r:
-            self.y = SCREEN_HEIGHT*4/5 - self.r
+        if self.y >= SCREEN_HEIGHT * 4 / 5 - self.r:
+            self.y = SCREEN_HEIGHT * 4 / 5 - self.r
             self.vy = -self.vy
         if self.y <= 0 + self.r:
             self.y = 0 + self.r
             self.vy = -self.vy
-
-    def draw(self):
-        """
-        Draws a target
-        :return:
-        """
-        pygame.draw.circle(screen, self.color,
-                           (int(round(self.x)), int(round(self.y))), self.r)
 
     def collide(self, other):
         """
@@ -204,28 +200,77 @@ class Target:
         if other.detect_collision(self):
             self.is_alive = False
 
-class Common_target(Target):
-    def __init__(self, parent):
-        super().__init__(RED)
-        self.parent = parent
 
-class Bomb:
-    pass
+class CommonTarget(Target):
+
+    def __init__(self, x, y, vx, vy):
+        super().__init__(x, y, vx, vy)
+
+    def draw(self):
+        """
+        Draws a target
+        :return:
+        """
+        pygame.draw.circle(screen, self.color,
+                           (int(round(self.x)), int(round(self.y))), self.r)
 
 
-def generate_random_targets(number: int):
-    targets = []
+class Cloud(Target):
+    def __init__(self, x, y, vx):
+        super().__init__(x, y, vx, 0, color=CYAN)
+        self.r = Target.standard_radius*2
+
+    def draw(self):
+        """
+        Draws a target
+        :return:
+        """
+        pygame.draw.circle(screen, self.color,
+                           (int(round(self.x)), int(round(self.y))), self.r)
+
+    def fire(self):
+        bomb = Bomb(self.x, self.y)
+        return bomb
+
+
+class Bomb():
+    standart_r = 25
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.v = 0
+        self.r = Bomb.standart_r
+        self.is_alive = True
+
+    def move(self, dt=1 / FPS):
+        self.y += self.v * dt
+        if self.y >= SCREEN_HEIGHT * 4 / 5 - self.r:
+            self.is_alive = False
+
+
+def generate_random_common_targets(number: int):
+    common_targets = []
     for i in range(number):
-        x = rnd.randint(0, SCREEN_HEIGHT)
-        y = rnd.randint(0, SCREEN_HEIGHT)
+        x = rnd.randint(0, SCREEN_WIDTH)
+        y = rnd.randint(0, SCREEN_HEIGHT*4/5)
         v = rnd.randint(30, 60)
         angle = rnd.randint(0, 360)
         vx = v * math.cos(angle / (2 * math.pi))
         vy = v * math.sin(angle / (2 * math.pi))
-        target = Target(x, y, vx, vy)
-        targets.append(target)
-    return targets
+        target = CommonTarget(x, y, vx, vy)
+        common_targets.append(target)
+    return common_targets
 
+def generate_random_clouds(number: int):
+    clouds = []
+    for i in range(number):
+        x = rnd.randint(0, SCREEN_WIDTH)
+        y = rnd.randint(0, SCREEN_HEIGHT*2/5)
+        v = rnd.randint(30, 60)
+        cloud = Cloud(x, y, v)
+        clouds.append(cloud)
+    return clouds
 
 def movement(cannon, event):
     if event.type == pygame.KEYDOWN:
@@ -254,10 +299,12 @@ def movement(cannon, event):
 
 
 def game_main_loop():
-    targets = generate_random_targets(10)
-    cannon = Cannon(SCREEN_WIDTH/2, SCREEN_HEIGHT*4/5)
+    common_targets = generate_random_common_targets(10)
+    clouds = generate_random_clouds(4)
+    cannon = Cannon(SCREEN_WIDTH / 2, SCREEN_HEIGHT * 4 / 5)
     clock = pygame.time.Clock()
     projectiles = []
+    bombs = []
     finished = False
 
     while not finished:
@@ -284,20 +331,32 @@ def game_main_loop():
         cannon.move()
         cannon.aim(pygame.mouse.get_pos())
         cannon.draw()
-        for target in targets:
-            target.move(1 / FPS)
+        for common_target in common_targets:
+            common_target.move(1 / FPS)
+        for cloud in clouds:
+            cloud.move(1/FPS)
         for projectile in projectiles:
             projectile.move(1 / FPS)
-            for target in targets:
-                target.collide(projectile)
-        for target in targets:
-            target.draw()
-            if not target.is_alive:
-                targets.remove(target)
+            for common_target in common_targets:
+                common_target.collide(projectile)
+
+        for common_target in common_targets:
+            if not common_target.is_alive:
+                common_targets.remove(common_target)
+        for cloud in clouds:
+            if not cloud.is_alive:
+                clouds.remove(cloud)
         for projectile in projectiles:
-            projectile.draw()
             if not projectile.is_alive:
                 projectiles.remove(projectile)
+
+        for common_target in common_targets:
+            common_target.draw()
+        for cloud in clouds:
+            cloud.draw()
+        for projectile in projectiles:
+            projectile.draw()
+
     pygame.quit()
 
 
