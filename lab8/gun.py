@@ -23,6 +23,7 @@ class Cannon:
     min_v = 5 * SCALE
     length = 100
     height = 10
+    cannon_v = 20
 
     def __init__(self, x, y):
         self.power = 0
@@ -32,6 +33,7 @@ class Cannon:
         self.shell_num = 5
         self.direction = math.pi / 4
         self.color = BLACK
+        self.moving_dest = "NONE"
 
     def aim(self, pos):
         """
@@ -82,6 +84,12 @@ class Cannon:
                 self.y + half * math.cos(self.direction) - length * math.sin(self.direction))
         pos4 = (self.x + half * math.sin(self.direction), self.y + 10 * math.cos(self.direction))
         pygame.draw.polygon(screen, self.color, [pos1, pos2, pos3, pos4])
+
+    def move(self, dt=1/FPS):
+        if self.moving_dest == "LEFT" and self.x > 50:
+            self.x -= Cannon.cannon_v*dt
+        elif self.moving_dest == "RIGHT" and self.x < SCREEN_HEIGHT - 50:
+            self.x += Cannon.cannon_v*dt
 
 
 class Shell:
@@ -214,12 +222,36 @@ def game_main_loop():
                 if cannon.shell_num > 0:
                     projectiles.append(cannon.fire())
                 cannon.power = 0
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    if cannon.moving_dest == "NONE":
+                        cannon.moving_dest = "RIGHT"
+                    else:
+                        cannon.moving_dest = "NONE"
+                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    if cannon.moving_dest == "NONE":
+                        cannon.moving_dest = "LEFT"
+                    else:
+                        cannon.moving_dest = "NONE"
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    if cannon.moving_dest == "RIGHT":
+                        cannon.moving_dest = "NONE"
+                    else:
+                        cannon.moving_dest = "LEFT"
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    if cannon.moving_dest == "LEFT":
+                        cannon.moving_dest = "NONE"
+                    else:
+                        cannon.moving_dest = "RIGHT"
+
         pygame.display.update()
         screen.fill(WHITE)
         # draw ground
         pygame.draw.polygon(screen, GRAY, (
         (0, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT * 4 / 5), (SCREEN_WIDTH, SCREEN_HEIGHT),
         (0, SCREEN_HEIGHT)))
+        cannon.move()
         cannon.aim(pygame.mouse.get_pos())
         cannon.draw()
         for target in targets:
